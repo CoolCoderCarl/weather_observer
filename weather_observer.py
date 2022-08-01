@@ -115,4 +115,3 @@ def report_weather_info(report_time: str, weather_data: dict):
 
 if __name__ == "__main__":
     prepare_weather_info()
-
