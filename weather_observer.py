@@ -103,7 +103,8 @@ def prepare_weather_info():
                 required_names[idx]: required_values[idx]
                 for idx in range(len(required_names))
             }
-            report_weather_info(timestamp, result)
+            # report_weather_info(timestamp, result)
+            print(result)
 
 
 def report_weather_info(report_time: str, weather_data: dict):
@@ -120,4 +121,4 @@ if __name__ == "__main__":
     except BaseException as error:
         print(error)
 
-    time.sleep(10)
+        time.sleep(10)
