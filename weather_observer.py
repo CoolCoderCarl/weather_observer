@@ -1,5 +1,6 @@
 import codecs
 import os
+import time
 from datetime import datetime
 from typing import Dict
 
@@ -114,4 +115,9 @@ def report_weather_info(report_time: str, weather_data: dict):
 
 
 if __name__ == "__main__":
-    prepare_weather_info()
+    try:
+        prepare_weather_info()
+    except BaseException as error:
+        print(error)
+
+    time.sleep(10)
