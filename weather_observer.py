@@ -1,6 +1,5 @@
 import codecs
 import os
-import time
 from datetime import datetime
 from typing import Dict
 
@@ -21,6 +20,7 @@ target_dict = {
     "esp": ["barcelona", "madrid", "vigo", "santander", "malaga"],
 }
 
+# Report in console, if passed special args - file - report to file
 
 required_names = [
     "relative humidity",
@@ -81,6 +81,13 @@ def get_time_by_timezone(timezone_name: str) -> str:
 
 
 def request_weather_info(country: str, city: str) -> Dict:
+    """
+    Send GET request to weatherbit resource fetching info about weather about transferred countries & cities
+    API_KEY must to be placed in .env file, if not - unhandled exception will throw. For more info look in README.md
+    :param country:
+    :param city:
+    :return:
+    """
     try:
         r = requests.get(
             f"https://api.weatherbit.io/v2.0/current?city={city}&country={country}&key={API_KEY}"
@@ -91,6 +98,11 @@ def request_weather_info(country: str, city: str) -> Dict:
 
 
 def prepare_weather_info():
+    """
+    Prepare weather information to better writing into report file
+    After result is ready, pass it to the report_weather_info func
+    :return:
+    """
     for country, cities in target_dict.items():
         for city in cities:
             required_values = []
@@ -103,11 +115,16 @@ def prepare_weather_info():
                 required_names[idx]: required_values[idx]
                 for idx in range(len(required_names))
             }
-            # report_weather_info(timestamp, result)
-            print(result)
+            report_weather_info(timestamp, result)
 
 
 def report_weather_info(report_time: str, weather_data: dict):
+    """
+    Report weather information to file with timestamp
+    :param report_time:
+    :param weather_data:
+    :return:
+    """
     with codecs.open("report_" + report_time + ".md", "a", "utf-8") as report:
         for key, values in weather_data.items():
             report.write(f"{key.capitalize()}: {values}  ")
@@ -116,9 +133,4 @@ def report_weather_info(report_time: str, weather_data: dict):
 
 
 if __name__ == "__main__":
-    try:
-        prepare_weather_info()
-    except BaseException as error:
-        print(error)
-
-        time.sleep(10)
+    prepare_weather_info()
