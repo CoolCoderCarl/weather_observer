@@ -9,7 +9,7 @@ from geopy.geocoders import Nominatim
 from pytz import timezone
 from timezonefinder import TimezoneFinder
 
-# As args ??
+# As args
 # Input file
 CITIES_FILE = "cities.txt"
 
