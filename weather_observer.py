@@ -18,7 +18,7 @@ CITIES_FILE = "cities.txt"
 REPORT_NAME = "weather_report_"
 REPORT_FORMAT = ".md"
 
-timestamp = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
+REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
 # Add time to report
 # Args like - file - input-file (if) - output-file (of) ???
@@ -94,7 +94,7 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
     """
     try:
         r = requests.get(
-            f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={API_KEY}"
+            f"http://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={API_KEY}"
         )
         return r.json()["data"][0]
     except requests.exceptions.RequestException:
@@ -123,7 +123,7 @@ def prepare_weather_info(
         required_names[idx]: required_values[idx] for idx in range(len(required_names))
     }
 
-    report_weather_info(timestamp, result, city_name, timezone_by_city, country_name)
+    report_weather_info(REPORT_TIME, result, city_name, timezone_by_city, country_name)
 
 
 def report_weather_info(
