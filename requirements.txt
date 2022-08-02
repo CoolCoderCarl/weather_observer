@@ -1,4 +1,6 @@
 black
 isort
+pyinstaller
+pytz~=2022.1
 requests~=2.28.1
 python-dotenv~=0.20.0
