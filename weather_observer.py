@@ -19,7 +19,7 @@ REPORT_FORMAT = ".md"
 
 REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
-# Args like - file - input-file (if) - output-file (of) ???
+# Args like - file - input-file (if)
 # By default report about local timezone the program currently executed
 
 
