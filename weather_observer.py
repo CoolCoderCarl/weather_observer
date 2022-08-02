@@ -150,7 +150,20 @@ def report_weather_info(
         )
         report.write(f"### Timezone: {timezone_by_city}  \n")
         for key, values in weather_data.items():
-            report.write(f"{key.capitalize()}: {values}  ")
+            if key in ["relative humidity", "cloud percents"]:
+                report.write(f"{key.capitalize()}: {values}%  ")
+            elif key in ["pressure", "sea level pressure"]:
+                report.write(f"{key.capitalize()}: {values} mb  ")
+            elif key in "solar radiation":
+                report.write(f"{key.capitalize()}: {values} Watt/m^2  ")
+            elif key in "solar radiation":
+                report.write(f"{key.capitalize()}: {values} m/s  ")
+            elif key in "snowfall":
+                report.write(f"{key.capitalize()}: {values} mm/hr  ")
+            elif key in ["temperature", "apparent temperature"]:
+                report.write(f"{key.capitalize()}: {values} C  ")
+            else:
+                report.write(f"{key.capitalize()}: {values}  ")
             report.write("\n")
         report.write("\n")
 
