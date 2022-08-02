@@ -6,7 +6,6 @@ from typing import Dict, List
 import requests
 from dotenv import load_dotenv
 from geopy.geocoders import Nominatim
-# import geopy
 from pytz import timezone
 from timezonefinder import TimezoneFinder
 
