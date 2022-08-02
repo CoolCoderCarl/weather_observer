@@ -6,6 +6,7 @@ from typing import Dict, List
 import requests
 from dotenv import load_dotenv
 from geopy.geocoders import Nominatim
+# import geopy
 from pytz import timezone
 from timezonefinder import TimezoneFinder
 
@@ -94,7 +95,7 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
     """
     try:
         r = requests.get(
-            f"http://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={API_KEY}"
+            f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={API_KEY}"
         )
         return r.json()["data"][0]
     except requests.exceptions.RequestException:
