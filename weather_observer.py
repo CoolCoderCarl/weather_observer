@@ -1,28 +1,25 @@
+import argparse
 import codecs
-import os
+import sys
 from datetime import datetime
 from typing import Dict, List
 
 import requests
-from dotenv import load_dotenv
 from geopy.geocoders import Nominatim
 from pytz import timezone
 from timezonefinder import TimezoneFinder
 
-load_dotenv()
-
-# As args
-API_KEY = os.getenv("API_KEY")
+# As args ??
+# Input file
 CITIES_FILE = "cities.txt"
 
+# Output file
 REPORT_NAME = "weather_report_"
 REPORT_FORMAT = ".md"
 
 REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
-# Add time to report
 # Args like - file - input-file (if) - output-file (of) ???
-# Report in console, if passed special args - file - report to file
 # By default report about local timezone the program currently executed
 
 
@@ -69,6 +66,37 @@ ignored_values = [
 ]
 
 
+def get_args():
+    """
+    Get arguments from CLI
+    :return:
+    """
+    root_parser = argparse.ArgumentParser(
+        prog="observer",
+        description="""Report about weather""",
+        epilog="""(c) CoolCoderCarl""",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    root_parser.add_argument(
+        "--api-key",
+        dest="apikey",
+        help="API key using for fetch info about weather",
+        type=str,
+    )
+
+    root_parser.add_argument("--file", action=argparse.BooleanOptionalAction)
+
+    # root_parser.add_argument("--input-file", action=argparse.BooleanOptionalAction)
+    # report.add_argument("-v", "--verbosity", action=argparse.BooleanOptionalAction)
+
+    return root_parser
+
+
+# Shortening
+namespace = get_args().parse_args(sys.argv[1:])
+
+
 # TO DO
 def get_time_by_timezone(timezone_name: str) -> str:
     """
@@ -87,14 +115,13 @@ def get_time_by_timezone(timezone_name: str) -> str:
 def request_weather_info(country_code: str, city_name: str) -> Dict:
     """
     Send GET request to weatherbit resource fetching info about weather about transferred countries & cities
-    API_KEY must to be placed in .env file, if not - unhandled exception will throw. For more info look in README.md
     :param country_code:
     :param city_name:
     :return:
     """
     try:
         r = requests.get(
-            f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={API_KEY}"
+            f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={namespace.apikey}"
         )
         return r.json()["data"][0]
     except requests.exceptions.RequestException:
@@ -126,7 +153,42 @@ def prepare_weather_info(
     report_weather_info(REPORT_TIME, result, city_name, timezone_by_city, country_name)
 
 
-def report_weather_info(
+def report_to_console(
+    weather_data: dict,
+    city_name: str,
+    timezone_by_city: str,
+    country_name: str,
+):
+    """
+    Report info about weather to console
+    :param weather_data:
+    :param city_name:
+    :param timezone_by_city:
+    :param country_name:
+    :return:
+    """
+    print()
+    print(f"## Country: {country_name} | City name: {city_name.capitalize()}")
+    print(f"### Timezone: {timezone_by_city}")
+    for key, values in weather_data.items():
+        if key in ["relative humidity", "cloud percents"]:
+            print(f"{key.capitalize()}: {values}%")
+        elif key in ["pressure", "sea level pressure"]:
+            print(f"{key.capitalize()}: {values} mb")
+        elif key in "solar radiation":
+            print(f"{key.capitalize()}: {values} Watt/m^2")
+        elif key in "solar radiation":
+            print(f"{key.capitalize()}: {values} m/s")
+        elif key in "snowfall":
+            print(f"{key.capitalize()}: {values} mm/hr")
+        elif key in ["temperature", "apparent temperature"]:
+            print(f"{key.capitalize()}: {values} C")
+        else:
+            print(f"{key.capitalize()}: {values}")
+    input("Enter any key to escape...")
+
+
+def report_to_file(
     report_time: str,
     weather_data: dict,
     city_name: str,
@@ -134,7 +196,7 @@ def report_weather_info(
     country_name: str,
 ):
     """
-    Report weather information to file with timestamp
+    Report info about weather to file with timestamp
     :param report_time:
     :param weather_data:
     :param city_name:
@@ -168,7 +230,37 @@ def report_weather_info(
         report.write("\n")
 
 
+def report_weather_info(
+    report_time: str,
+    weather_data: dict,
+    city_name: str,
+    timezone_by_city: str,
+    country_name: str,
+):
+    """
+    Report weather information to console as default or in file with timestamp
+    If pass --file as arg switch reporting to file
+    Else report to console
+    :param report_time:
+    :param weather_data:
+    :param city_name:
+    :param timezone_by_city:
+    :param country_name:
+    :return:
+    """
+    if namespace.file:
+        report_to_file(
+            report_time, weather_data, city_name, timezone_by_city, country_name
+        )
+    else:
+        report_to_console(weather_data, city_name, timezone_by_city, country_name)
+
+
 def load_cities_from_file() -> List[str]:
+    """
+    Load cities from file
+    :return:
+    """
     try:
         with open(CITIES_FILE, "r") as cities_file:
             cities = cities_file.read().split()
@@ -206,4 +298,5 @@ def prepare_target_location_info():
 
 
 if __name__ == "__main__":
-    prepare_target_location_info()
+    if namespace.apikey:
+        prepare_target_location_info()
