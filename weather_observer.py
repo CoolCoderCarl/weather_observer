@@ -286,6 +286,7 @@ def load_cities_from_file() -> List[str]:
             return cities
     except FileNotFoundError as file_not_found_err:
         print(file_not_found_err)
+        print(f"Will create {CITIES_FILE}...")
     finally:
         with open(CITIES_FILE, "w") as cities_file:
             cities_file.write(get_current_city())
