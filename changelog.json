@@ -1,0 +1,14 @@
+{
+    "categories": [
+      {
+        "title": "## :tada::tada::tada: Features",
+        "labels": ["develop"]
+      },
+      {
+        "title": "## Release",
+        "labels": ["release"]
+      }
+    ],
+    "sort": "ASC",
+    "pr_template": "- ${{TITLE}}\n   - PR: #${{NUMBER}}"
+}
