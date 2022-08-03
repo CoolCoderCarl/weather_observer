@@ -25,7 +25,6 @@ IP_SITE = "http://ipinfo.io/"
 
 REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
-# Create file if not exist with current local city name if not exist
 
 required_names = [
     "relative humidity",
