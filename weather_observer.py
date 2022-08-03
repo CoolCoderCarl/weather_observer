@@ -19,6 +19,8 @@ REPORT_FORMAT = ".md"
 
 REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
+IP_SITE = "http://ipinfo.io/"
+
 # Args like - file - input-file (if)
 # By default report about local timezone the program currently executed
 
@@ -86,8 +88,9 @@ def get_args():
     )
 
     root_parser.add_argument("--file", action=argparse.BooleanOptionalAction)
+    root_parser.add_argument("--local", action=argparse.BooleanOptionalAction)
 
-    # root_parser.add_argument("--input-file", action=argparse.BooleanOptionalAction)
+    # root_parser.add_argument("--input-file", dest='inputfile', nargs='?', const=CITIES_FILE, type=str)
     # report.add_argument("-v", "--verbosity", action=argparse.BooleanOptionalAction)
 
     return root_parser
@@ -269,34 +272,53 @@ def load_cities_from_file() -> List[str]:
         print(file_not_found_err)
 
 
-def prepare_target_location_info():
+def get_current_city() -> str:
+    """
+    Return city name by trusted provider info
+    :return:
+    """
+    try:
+        return requests.get(IP_SITE).json()["city"]
+    except requests.exceptions.RequestException as request_exception:
+        print(request_exception)
+
+
+def prepare_target_location_info(city_name: str):
     """
     Prepare info such as country name, country code, city name and timezone for target city,
     then pass it to next func prepare_weather_info
     :return:
     """
     geolocator = Nominatim(user_agent="geoapiExercises")
-    for city_name in load_cities_from_file():
-        location = geolocator.geocode(city_name)
+    location = geolocator.geocode(city_name)
 
-        obj = TimezoneFinder()
-        timezone_by_city = obj.timezone_at(
-            lng=location.longitude, lat=location.latitude
-        )
+    obj = TimezoneFinder()
+    timezone_by_city = obj.timezone_at(lng=location.longitude, lat=location.latitude)
 
-        loc_ad = geolocator.reverse(
-            str(location.latitude) + "," + str(location.longitude)
-        )
-        full_address_by_ll = loc_ad.raw["address"]
+    loc_ad = geolocator.reverse(str(location.latitude) + "," + str(location.longitude))
+    full_address_by_ll = loc_ad.raw["address"]
 
-        country_code = full_address_by_ll.get(
-            "country_code", ""
-        )  # Verification with city from file & city from this output
-        country_name = full_address_by_ll.get("country", "")
+    country_code = full_address_by_ll.get(
+        "country_code", ""
+    )  # Verification with city from file & city from this output
+    country_name = full_address_by_ll.get("country", "")
 
-        prepare_weather_info(country_name, country_code, city_name, timezone_by_city)
+    prepare_weather_info(country_name, country_code, city_name, timezone_by_city)
+
+
+def which_target():
+    """
+    Decide which target location local or got from file will reported
+    :return:
+    """
+    if namespace.local:
+        city_name = get_current_city()
+        prepare_target_location_info(city_name)
+    else:
+        for city_name in load_cities_from_file():
+            prepare_target_location_info(city_name)
 
 
 if __name__ == "__main__":
     if namespace.apikey:
-        prepare_target_location_info()
+        which_target()

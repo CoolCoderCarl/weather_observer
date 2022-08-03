@@ -28,4 +28,7 @@ Regular usage:
 If need report file:  
 `weather_observer.exe --api-key YOUR_API_KEY --file`
 
+If you want to get info only about you current location just pass `--local`:
+`weather_observer.exe --api-key YOUR_API_KEY --local`
+
 You also can wrap up invocation with `.sh` or `.bat`. Think about it.
