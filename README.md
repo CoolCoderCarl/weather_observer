@@ -23,17 +23,16 @@ To execute program just pass the API key and get information in console. Or pass
 
 ### Example 
 
-Regular usage:  
+Regular usage, will get cities from `cities.txt`, if not exist will create with current location city:  
 `weather_observer.exe --api-key YOUR_API_KEY`
 
-If need report file:  
+If need report to file:  
 `weather_observer.exe --api-key YOUR_API_KEY --file`
 
-If you want to get info only about you current location just pass `--local`:
+If you want to get info only about you current location just pass `--local`:  
 `weather_observer.exe --api-key YOUR_API_KEY --local`
 
-If you want to get more info about programm running pass `--verbosity` when using `--file`, 
-have no sense while `--local` have been passed:
+If you want to get more info about programm running pass `--verbosity` when using `--file`, have no sense while `--local` have been passed:  
 `weather_observer.exe --api-key YOUR_API_KEY --file --verbosity`
 
 You also can wrap up invocation with `.sh` or `.bat`. Think about it.
