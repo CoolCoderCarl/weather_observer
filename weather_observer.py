@@ -1,5 +1,6 @@
 import argparse
 import codecs
+import os
 import sys
 import time
 from datetime import datetime
@@ -287,11 +288,14 @@ def load_cities_from_file() -> List[str]:
         print(file_not_found_err)
         print(f"Will create {CITIES_FILE}...")
     finally:
-        with open(CITIES_FILE, "w") as cities_file:
-            cities_file.write(get_current_city())
-        with open(CITIES_FILE, "r") as cities_file:
-            cities = cities_file.read().split()
-            return cities
+        if os.path.exists(CITIES_FILE):
+            pass
+        else:
+            with open(CITIES_FILE, "w") as cities_file:
+                cities_file.write(get_current_city())
+            with open(CITIES_FILE, "r") as cities_file:
+                cities = cities_file.read().split()
+                return cities
 
 
 def get_current_city() -> str:
