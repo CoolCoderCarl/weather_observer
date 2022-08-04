@@ -61,13 +61,13 @@ jobs:
         include:
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: python -m PyInstaller --clean --workpath /tmp/build --specpath /tmp -F weather_observer_${{ needs.prepare.outputs.get_current_tag }}_.py
-            OUT_FILE_NAME: weather_observer.exe
+            CMD_BUILD: python -m PyInstaller --clean --workpath /tmp/build --specpath /tmp -F weather_observer.py
+            OUT_FILE_NAME: weather_observer_${{ needs.prepare.outputs.get_current_tag }}.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
           - os: ubuntu-latest
             TARGET: ubuntu
-            CMD_BUILD: python -m PyInstaller --clean --workpath /tmp/build --specpath /tmp -F weather_observer_${{ needs.prepare.outputs.get_current_tag }}_.py
-            OUT_FILE_NAME: weather_observer
+            CMD_BUILD: python -m PyInstaller --clean --workpath /tmp/build --specpath /tmp -F weather_observer.py
+            OUT_FILE_NAME: weather_observer_${{ needs.prepare.outputs.get_current_tag }}
             ASSET_MIME: application/x-binary
 
     steps:
