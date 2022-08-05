@@ -241,9 +241,7 @@ def report_to_file(
         f"{REPORT_NAME}{report_time}{REPORT_FORMAT}", "a", "utf-8"
     ) as report:
         if namespace.verbosity:
-            print(
-                f"Gathering info about {city_name.capitalize()} in {country_name}..."
-            )
+            print(f"Gathering info about {city_name.capitalize()} in {country_name}...")
         report.write(
             f"## Country: {country_name} | City name: {city_name.capitalize()} \n"
         )
