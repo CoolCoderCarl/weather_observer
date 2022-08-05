@@ -139,8 +139,8 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
             f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={namespace.apikey}"
         )
         return r.json()["data"][0]
-    except requests.exceptions.RequestException:
-        pass
+    except requests.exceptions.RequestException as req_ex:
+        print(req_ex)
 
 
 def calculate_uv_level(uv_value: float) -> str:
@@ -179,6 +179,24 @@ def calculate_aqi_level(aqi_value: int) -> str:
         return "very poor"
     elif 200 <= aqi_value:
         return "hazardous"
+
+
+def celsius_to_fahrenheit(celsius: float) -> float:
+    """
+    Convert celsius to fahrenheit
+    :param celsius:
+    :return:
+    """
+    return (celsius * 9 / 5) + 32
+
+
+def celsius_to_kelvin(celsius: float) -> float:
+    """
+    Convert celsius to kelvin
+    :param celsius:
+    :return:
+    """
+    return celsius + 273.15
 
 
 def prepare_weather_info(
@@ -241,7 +259,7 @@ def report_to_console(
             print(f"{key.capitalize()}: {values}%")
         elif key in ["pressure", "sea level pressure"]:
             print(
-                f"{key.capitalize()}: {values} mb | {values*MMHG} mmHg | {values*KPA} kPa"
+                f"{key.capitalize()}: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
             )
         elif key in "solar radiation":
             print(f"{key.capitalize()}: {values} Watt/m^2")
@@ -258,7 +276,9 @@ def report_to_console(
                 f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
             )
         elif key in ["temperature", "apparent temperature"]:
-            print(f"{key.capitalize()}: {values} C")
+            print(
+                f"{key.capitalize()}: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+            )
         else:
             print(f"{key.capitalize()}: {values}")
     input("Enter any key to escape...")
@@ -300,7 +320,7 @@ def report_to_file(
                 report.write(f"{key.capitalize()}: {values}%  ")
             elif key in ["pressure", "sea level pressure"]:
                 report.write(
-                    f"{key.capitalize()}: {values} mb | {values*MMHG} mmHg | {values*KPA} kPa"
+                    f"{key.capitalize()}: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
                 )
             elif key in "solar radiation":
                 report.write(f"{key.capitalize()}: {values} Watt/m^2  ")
@@ -317,7 +337,9 @@ def report_to_file(
                     f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
                 )
             elif key in ["temperature", "apparent temperature"]:
-                report.write(f"{key.capitalize()}: {values} C  ")
+                report.write(
+                    f"{key.capitalize()}: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+                )
             else:
                 report.write(f"{key.capitalize()}: {values}  ")
             report.write("\n")
@@ -404,9 +426,12 @@ def get_elevation_by_ll(latitude: str, longitude: str) -> int:
     :param longitude:
     :return:
     """
-    return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()[
-        "results"
-    ][0]["elevation"]
+    try:
+        return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()[
+            "results"
+        ][0]["elevation"]
+    except requests.exceptions.RequestException as req_ex:
+        print(req_ex)
 
 
 def prepare_target_location_info(city_name: str):
