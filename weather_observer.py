@@ -23,8 +23,13 @@ start_time = time.time()
 
 # Using in get_current_city func to retrieve current city name
 IP_SITE = "http://ipinfo.io/"
+OPEN_ELEVATION_API = "https://api.open-elevation.com/api/v1/lookup?locations="
 
 REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
+
+# Conversion for pressure
+KPA = 0.1  # Kilo Pascal
+MMHG = 0.750062  # Millimeter of mercury
 
 
 required_values = [
@@ -108,7 +113,6 @@ def get_args():
 namespace = get_args().parse_args(sys.argv[1:])
 
 
-# TO DO
 def get_time_by_timezone(timezone_name: str) -> str:
     """
     Get current time in UTC the convert to passed time zone
@@ -178,7 +182,11 @@ def calculate_aqi_level(aqi_value: int) -> str:
 
 
 def prepare_weather_info(
-    country_name: str, country_code: str, city_name: str, timezone_by_city: str
+    country_name: str,
+    country_code: str,
+    city_name: str,
+    timezone_by_city: str,
+    elevation: int,
 ):
     """
     Prepare weather information to better writing into report file
@@ -187,6 +195,7 @@ def prepare_weather_info(
     :param country_code:
     :param city_name:
     :param timezone_by_city:
+    :param elevation:
     :return:
     """
     report_values = []
@@ -199,7 +208,9 @@ def prepare_weather_info(
         required_values[idx]: report_values[idx] for idx in range(len(required_values))
     }
 
-    report_weather_info(REPORT_TIME, result, city_name, timezone_by_city, country_name)
+    report_weather_info(
+        REPORT_TIME, result, city_name, timezone_by_city, country_name, elevation
+    )
 
 
 def report_to_console(
@@ -207,6 +218,7 @@ def report_to_console(
     city_name: str,
     timezone_by_city: str,
     country_name: str,
+    elevation: int,
 ):
     """
     Report info about weather to console
@@ -214,16 +226,23 @@ def report_to_console(
     :param city_name:
     :param timezone_by_city:
     :param country_name:
+    :param elevation:
     :return:
     """
     print()
     print(f"## Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"### Timezone: {timezone_by_city}")
+    print(
+        f"#### Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}"
+    )
+    print(f"Elevation under sea level: {elevation} m")
     for key, values in weather_data.items():
         if key in ["relative humidity", "cloud percents"]:
             print(f"{key.capitalize()}: {values}%")
         elif key in ["pressure", "sea level pressure"]:
-            print(f"{key.capitalize()}: {values} mb")
+            print(
+                f"{key.capitalize()}: {values} mb | {values*MMHG} mmHg | {values*KPA} kPa"
+            )
         elif key in "solar radiation":
             print(f"{key.capitalize()}: {values} Watt/m^2")
         elif key in "wind speed":
@@ -251,6 +270,7 @@ def report_to_file(
     city_name: str,
     timezone_by_city: str,
     country_name: str,
+    elevation: int,
 ):
     """
     Report info about weather to file with timestamp
@@ -259,6 +279,7 @@ def report_to_file(
     :param city_name:
     :param timezone_by_city:
     :param country_name:
+    :param elevation:
     :return:
     """
     with codecs.open(
@@ -267,14 +288,20 @@ def report_to_file(
         if namespace.verbosity:
             print(f"Gathering info about {city_name.capitalize()} in {country_name}...")
         report.write(
-            f"## Country: {country_name} | City name: {city_name.capitalize()} \n"
+            f"## Country: {country_name} | City name: {city_name.capitalize()}  \n"
         )
         report.write(f"### Timezone: {timezone_by_city}  \n")
+        report.write(
+            f"#### Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
+        )
+        report.write(f"Elevation under sea level: {elevation} m  \n")
         for key, values in weather_data.items():
             if key in ["relative humidity", "cloud percents"]:
                 report.write(f"{key.capitalize()}: {values}%  ")
             elif key in ["pressure", "sea level pressure"]:
-                report.write(f"{key.capitalize()}: {values} mb  ")
+                report.write(
+                    f"{key.capitalize()}: {values} mb | {values*MMHG} mmHg | {values*KPA} kPa"
+                )
             elif key in "solar radiation":
                 report.write(f"{key.capitalize()}: {values} Watt/m^2  ")
             elif key in "wind speed":
@@ -305,6 +332,7 @@ def report_weather_info(
     city_name: str,
     timezone_by_city: str,
     country_name: str,
+    elevation: int,
 ):
     """
     Report weather information to console as default or in file with timestamp
@@ -315,14 +343,22 @@ def report_weather_info(
     :param city_name:
     :param timezone_by_city:
     :param country_name:
+    :param elevation:
     :return:
     """
     if namespace.file:
         report_to_file(
-            report_time, weather_data, city_name, timezone_by_city, country_name
+            report_time,
+            weather_data,
+            city_name,
+            timezone_by_city,
+            country_name,
+            elevation,
         )
     else:
-        report_to_console(weather_data, city_name, timezone_by_city, country_name)
+        report_to_console(
+            weather_data, city_name, timezone_by_city, country_name, elevation
+        )
 
 
 def load_cities_from_file() -> List[str]:
@@ -361,6 +397,18 @@ def get_current_city() -> str:
         print(request_exception)
 
 
+def get_elevation_by_ll(latitude: str, longitude: str) -> int:
+    """
+    Get elevation(altitude) from open API by latitude & longitude
+    :param latitude:
+    :param longitude:
+    :return:
+    """
+    return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()[
+        "results"
+    ][0]["elevation"]
+
+
 def prepare_target_location_info(city_name: str):
     """
     Prepare info such as country name, country code, city name and timezone for target city,
@@ -369,17 +417,25 @@ def prepare_target_location_info(city_name: str):
     """
     geolocator = Nominatim(user_agent="geoapiExercises")
     location = geolocator.geocode(city_name)
+    longitude = str(location.longitude)
+    latitude = str(location.latitude)
 
     obj = TimezoneFinder()
     timezone_by_city = obj.timezone_at(lng=location.longitude, lat=location.latitude)
 
-    loc_ad = geolocator.reverse(str(location.latitude) + "," + str(location.longitude))
+    loc_ad = geolocator.reverse(latitude + "," + longitude)
     full_address_by_ll = loc_ad.raw["address"]
 
     country_code = full_address_by_ll.get("country_code", "")
     country_name = full_address_by_ll.get("country", "")
 
-    prepare_weather_info(country_name, country_code, city_name, timezone_by_city)
+    prepare_weather_info(
+        country_name,
+        country_code,
+        city_name,
+        timezone_by_city,
+        get_elevation_by_ll(latitude=latitude, longitude=longitude),
+    )
 
 
 def which_target():
