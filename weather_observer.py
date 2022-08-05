@@ -27,7 +27,7 @@ IP_SITE = "http://ipinfo.io/"
 REPORT_TIME = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
 
-required_names = [
+required_values = [
     "relative humidity",
     "part of day",
     "pressure",
@@ -37,6 +37,8 @@ required_names = [
     "wind direction",
     "sea level pressure",
     "snowfall",
+    "uv",
+    "aqi",
     "temperature",
     "apparent temperature",
 ]
@@ -55,13 +57,11 @@ ignored_values = [
     "sunset",
     "dni",
     "dewpt",
-    "uv",
     "precip",
     "wind_dir",
     "sunrise",
     "ghi",
     "dhi",
-    "aqi",
     "lat",
     "weather",
     "datetime",
@@ -139,6 +139,44 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
         pass
 
 
+def calculate_uv_level(uv_value: float) -> str:
+    """
+    Passed UV value as float and return string value on the scale
+    :param uv_value:
+    :return:
+    """
+    if 0.0 <= uv_value <= 2.9:
+        return "green"
+    elif 3.0 <= uv_value <= 5.9:
+        return "yellow"
+    elif 6.0 <= uv_value <= 7.9:
+        return "orange"
+    elif 8.0 <= uv_value <= 10.9:
+        return "red"
+    elif 11.0 <= uv_value:
+        return "purple"
+
+
+def calculate_aqi_level(aqi_value: int) -> str:
+    """
+    Passed Air Quality Index value as integer and return string value on the scale
+    :param aqi_value:
+    :return:
+    """
+    if 0 <= aqi_value <= 33:
+        return "very good"
+    elif 34 <= aqi_value <= 66:
+        return "good"
+    elif 67 <= aqi_value <= 99:
+        return "fair"
+    elif 100 <= aqi_value <= 149:
+        return "poor"
+    elif 150 <= aqi_value <= 200:
+        return "very poor"
+    elif 200 <= aqi_value:
+        return "hazardous"
+
+
 def prepare_weather_info(
     country_name: str, country_code: str, city_name: str, timezone_by_city: str
 ):
@@ -151,14 +189,14 @@ def prepare_weather_info(
     :param timezone_by_city:
     :return:
     """
-    required_values = []
+    report_values = []
     for k, v in request_weather_info(country_code, city_name).items():
         if k in ignored_values:
             pass
         else:
-            required_values.append(v)
+            report_values.append(v)
     result = {
-        required_names[idx]: required_values[idx] for idx in range(len(required_names))
+        required_values[idx]: report_values[idx] for idx in range(len(required_values))
     }
 
     report_weather_info(REPORT_TIME, result, city_name, timezone_by_city, country_name)
@@ -192,6 +230,14 @@ def report_to_console(
             print(f"{key.capitalize()}: {values} m/s")
         elif key in "snowfall":
             print(f"{key.capitalize()}: {values} mm/hr")
+        elif key in "uv":
+            print(
+                f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
+            )
+        elif key in "aqi":
+            print(
+                f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
+            )
         elif key in ["temperature", "apparent temperature"]:
             print(f"{key.capitalize()}: {values} C")
         else:
@@ -219,9 +265,7 @@ def report_to_file(
         f"{REPORT_NAME}{report_time}{REPORT_FORMAT}", "a", "utf-8"
     ) as report:
         if namespace.verbosity:
-            print(
-                f"Gatherging info about {city_name.capitalize()} in {country_name}..."
-            )
+            print(f"Gathering info about {city_name.capitalize()} in {country_name}...")
         report.write(
             f"## Country: {country_name} | City name: {city_name.capitalize()} \n"
         )
@@ -237,6 +281,14 @@ def report_to_file(
                 report.write(f"{key.capitalize()}: {values} m/s  ")
             elif key in "snowfall":
                 report.write(f"{key.capitalize()}: {values} mm/hr  ")
+            elif key in "uv":
+                report.write(
+                    f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
+                )
+            elif key in "aqi":
+                report.write(
+                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
+                )
             elif key in ["temperature", "apparent temperature"]:
                 report.write(f"{key.capitalize()}: {values} C  ")
             else:
