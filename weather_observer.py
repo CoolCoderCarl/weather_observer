@@ -38,6 +38,7 @@ required_values = [
     "sea level pressure",
     "snowfall",
     "uv",
+    "aqi",
     "temperature",
     "apparent temperature",
 ]
@@ -61,7 +62,6 @@ ignored_values = [
     "sunrise",
     "ghi",
     "dhi",
-    "aqi",
     "lat",
     "weather",
     "datetime",
@@ -157,6 +157,26 @@ def calculate_uv_level(uv_value: float) -> str:
         return "purple"
 
 
+def calculate_aqi_level(aqi_value: int) -> str:
+    """
+    Passed Air Quality Index value as integer and return string value on the scale
+    :param aqi_value:
+    :return:
+    """
+    if 0 <= aqi_value <= 33:
+        return "very good"
+    elif 34 <= aqi_value <= 66:
+        return "good"
+    elif 67 <= aqi_value <= 99:
+        return "fair"
+    elif 100 <= aqi_value <= 149:
+        return "poor"
+    elif 150 <= aqi_value <= 200:
+        return "very poor"
+    elif 200 <= aqi_value:
+        return "hazardous"
+
+
 def prepare_weather_info(
     country_name: str, country_code: str, city_name: str, timezone_by_city: str
 ):
@@ -214,6 +234,10 @@ def report_to_console(
             print(
                 f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
             )
+        elif key in "aqi":
+            print(
+                f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
+            )
         elif key in ["temperature", "apparent temperature"]:
             print(f"{key.capitalize()}: {values} C")
         else:
@@ -260,6 +284,10 @@ def report_to_file(
             elif key in "uv":
                 report.write(
                     f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
+                )
+            elif key in "aqi":
+                report.write(
+                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
                 )
             elif key in ["temperature", "apparent temperature"]:
                 report.write(f"{key.capitalize()}: {values} C  ")
