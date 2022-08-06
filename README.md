@@ -1,6 +1,11 @@
 # weather_observer
 Observe about the weather
 
+Three APIs implemented:
+1. https://www.weatherbit.io/api/weather-current
+2. https://github.com/Jorl17/open-elevation/blob/master/docs/api.md
+3. https://pygismeteo.readthedocs.io/ru/latest/
+
 ## Prehistory
 I want to know more information about weather in countries ASAP.
 
@@ -17,7 +22,6 @@ For using this program the main thing you have to do it is to register here http
 The second thing - download file `cities.txt` from repository.  
 By the way, if you have no `cities.txt` file, it will create with your current location city name.
 
-API docs located is right here - https://www.weatherbit.io/api/weather-current
 
 To execute program just pass the API key and get information in console. Or pass additional key `--file` and get report file.
 

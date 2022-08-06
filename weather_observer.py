@@ -8,6 +8,7 @@ from typing import Dict, List
 
 import requests
 from geopy.geocoders import Nominatim
+from pygismeteo import Gismeteo
 from pytz import timezone
 from timezonefinder import TimezoneFinder
 
@@ -181,6 +182,31 @@ def calculate_aqi_level(aqi_value: int) -> str:
         return "hazardous"
 
 
+def calculate_kp_level(kp_value: int) -> str:
+    """
+    Passed Kp value as int and return string value on the scale
+    The Kp-index describes the disturbance of the Earth’s magnetic field caused by the solar wind
+    :param kp_value:
+    :return:
+    """
+    if 0 <= kp_value < 3:
+        return "quiet"
+    elif kp_value == 3:
+        return "unsettled"
+    elif kp_value == 4:
+        return "active"
+    elif kp_value == 5:
+        return "minor storm"
+    elif kp_value == 6:
+        return "moderate storm"
+    elif kp_value == 7:
+        return "strong storm"
+    elif kp_value == 8:
+        return "severe storm"
+    elif kp_value >= 9:
+        return "intense storm"
+
+
 def celsius_to_fahrenheit(celsius: float) -> float:
     """
     Convert celsius to fahrenheit
@@ -205,6 +231,8 @@ def prepare_weather_info(
     city_name: str,
     timezone_by_city: str,
     elevation: int,
+    water_temp: float,
+    geomagnetic_field: int,
 ):
     """
     Prepare weather information to better writing into report file
@@ -214,6 +242,8 @@ def prepare_weather_info(
     :param city_name:
     :param timezone_by_city:
     :param elevation:
+    :param water_temp:
+    :param geomagnetic_field:
     :return:
     """
     report_values = []
@@ -227,17 +257,25 @@ def prepare_weather_info(
     }
 
     report_weather_info(
-        REPORT_TIME, result, city_name, timezone_by_city, country_name, elevation
+        REPORT_TIME,
+        result,
+        city_name,
+        timezone_by_city,
+        country_name,
+        elevation,
+        water_temp,
+        geomagnetic_field,
     )
 
 
-# Report about time is shifted by 2 seconds, depending on execution
 def report_to_console(
     weather_data: dict,
     city_name: str,
     timezone_by_city: str,
     country_name: str,
     elevation: int,
+    water_temp: float,
+    geomagnetic_field: int,
 ):
     """
     Report info about weather to console
@@ -246,6 +284,8 @@ def report_to_console(
     :param timezone_by_city:
     :param country_name:
     :param elevation:
+    :param water_temp:
+    :param geomagnetic_field:
     :return:
     """
     print()
@@ -280,10 +320,15 @@ def report_to_console(
             )
         else:
             print(f"{key.capitalize()}: {values}")
+    print(
+        f"Water temperature in location: {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp), 1)} K"
+    )
+    print(
+        f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}"
+    )
     input("Enter any key to escape...")
 
 
-# Report about time is shifted by 2 seconds, depending on execution
 def report_to_file(
     report_time: str,
     weather_data: dict,
@@ -291,6 +336,8 @@ def report_to_file(
     timezone_by_city: str,
     country_name: str,
     elevation: int,
+    water_temp: float,
+    geomagnetic_field: int,
 ):
     """
     Report info about weather to file with timestamp
@@ -300,6 +347,8 @@ def report_to_file(
     :param timezone_by_city:
     :param country_name:
     :param elevation:
+    :param water_temp:
+    :param geomagnetic_field:
     :return:
     """
     with codecs.open(
@@ -320,7 +369,7 @@ def report_to_file(
                 report.write(f"{key.capitalize()}: {values}%  ")
             elif key in ["pressure", "sea level pressure"]:
                 report.write(
-                    f"**{key.capitalize()}**: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa  "
+                    f"**{key.capitalize()}:** {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa  "
                 )
             elif key in "solar radiation":
                 report.write(f"{key.capitalize()}: {values} Watt/m^2  ")
@@ -330,7 +379,7 @@ def report_to_file(
                 report.write(f"{key.capitalize()}: {values} mm/hr  ")
             elif key in "uv":
                 report.write(
-                    f"**{key.upper()}**: {values} - {calculate_uv_level(round(values, 1)).capitalize()}  "
+                    f"**{key.upper()}:** {values} - {calculate_uv_level(round(values, 1)).capitalize()}  "
                 )
             elif key in "aqi":
                 report.write(
@@ -338,11 +387,18 @@ def report_to_file(
                 )
             elif key in ["temperature", "apparent temperature"]:
                 report.write(
-                    f"**{key.capitalize()}**: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K  "
+                    f"**{key.capitalize()}:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K  "
                 )
             else:
                 report.write(f"{key.capitalize()}: {values}  ")
             report.write("\n")
+        report.write(
+            f"**Water temperature in location:** {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp),1)} K  \n"
+        )
+        report.write(
+            f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  "
+        )
+        report.write("\n")
         if namespace.verbosity:
             print("--- %s seconds ---" % (time.time() - START_TIME))
         report.write("\n")
@@ -355,6 +411,8 @@ def report_weather_info(
     timezone_by_city: str,
     country_name: str,
     elevation: int,
+    water_temp: float,
+    geomagnetic_field: int,
 ):
     """
     Report weather information to console as default or in file with timestamp
@@ -366,6 +424,8 @@ def report_weather_info(
     :param timezone_by_city:
     :param country_name:
     :param elevation:
+    :param water_temp:
+    :param geomagnetic_field:
     :return:
     """
     if namespace.file:
@@ -376,10 +436,18 @@ def report_weather_info(
             timezone_by_city,
             country_name,
             elevation,
+            water_temp,
+            geomagnetic_field,
         )
     else:
         report_to_console(
-            weather_data, city_name, timezone_by_city, country_name, elevation
+            weather_data,
+            city_name,
+            timezone_by_city,
+            country_name,
+            elevation,
+            water_temp,
+            geomagnetic_field,
         )
 
 
@@ -434,12 +502,41 @@ def get_elevation_by_ll(latitude: str, longitude: str) -> int:
         print(req_ex)
 
 
+def get_water_temp_by_ll(latitude: float, longitude: float) -> float:
+    """
+    Get water temperature from https://www.gismeteo.com/api/ by latitude & longitude
+    :param latitude:
+    :param longitude:
+    :return:
+    """
+    gm = Gismeteo()
+    city_id = gm.search.by_coordinates(latitude=latitude, longitude=longitude, limit=1)[
+        0
+    ].id
+    return gm.current.by_id(city_id).temperature.water.c
+
+
+def get_geomagnetic_field_by_ll(latitude: float, longitude: float) -> int:
+    """
+    Get water temperature from https://www.gismeteo.com/api/ by latitude & longitude
+    :param latitude:
+    :param longitude:
+    :return:
+    """
+    gm = Gismeteo()
+    city_id = gm.search.by_coordinates(latitude=latitude, longitude=longitude, limit=1)[
+        0
+    ].id
+    return gm.current.by_id(city_id).gm
+
+
 def prepare_target_location_info(city_name: str):
     """
     Prepare info such as country name, country code, city name and timezone for target city,
     then pass it to next func prepare_weather_info
     :return:
     """
+    # Separate and return longitude & latitude with different funcs - Class ?
     geolocator = Nominatim(user_agent="geoapiExercises")
     location = geolocator.geocode(city_name)
     longitude = str(location.longitude)
@@ -460,6 +557,10 @@ def prepare_target_location_info(city_name: str):
         city_name,
         timezone_by_city,
         get_elevation_by_ll(latitude=latitude, longitude=longitude),
+        get_water_temp_by_ll(latitude=location.latitude, longitude=location.longitude),
+        get_geomagnetic_field_by_ll(
+            latitude=location.latitude, longitude=location.longitude
+        ),
     )
 
 
