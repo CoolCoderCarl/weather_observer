@@ -19,7 +19,7 @@ REPORT_NAME = "weather_report_"
 REPORT_FORMAT = ".md"
 
 # Time when program execution started
-start_time = time.time()
+START_TIME = time.time()
 
 # Using in get_current_city func to retrieve current city name
 IP_SITE = "http://ipinfo.io/"
@@ -231,6 +231,7 @@ def prepare_weather_info(
     )
 
 
+# Report about time is shifted by 2 seconds, depending on execution
 def report_to_console(
     weather_data: dict,
     city_name: str,
@@ -248,10 +249,10 @@ def report_to_console(
     :return:
     """
     print()
-    print(f"## Country: {country_name} | City name: {city_name.capitalize()}")
-    print(f"### Timezone: {timezone_by_city}")
+    print(f"Country: {country_name} | City name: {city_name.capitalize()}")
+    print(f"Timezone: {timezone_by_city}")
     print(
-        f"#### Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}"
+        f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}"
     )
     print(f"Elevation under sea level: {elevation} m")
     for key, values in weather_data.items():
@@ -284,6 +285,7 @@ def report_to_console(
     input("Enter any key to escape...")
 
 
+# Report about time is shifted by 2 seconds, depending on execution
 def report_to_file(
     report_time: str,
     weather_data: dict,
@@ -314,13 +316,13 @@ def report_to_file(
         report.write(
             f"#### Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
         )
-        report.write(f"Elevation under sea level: {elevation} m  \n")
+        report.write(f"**Elevation under sea level:** {elevation} m  ")
         for key, values in weather_data.items():
             if key in ["relative humidity", "cloud percents"]:
                 report.write(f"{key.capitalize()}: {values}%  ")
             elif key in ["pressure", "sea level pressure"]:
                 report.write(
-                    f"{key.capitalize()}: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
+                    f"**{key.capitalize()}**: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa  "
                 )
             elif key in "solar radiation":
                 report.write(f"{key.capitalize()}: {values} Watt/m^2  ")
@@ -330,21 +332,21 @@ def report_to_file(
                 report.write(f"{key.capitalize()}: {values} mm/hr  ")
             elif key in "uv":
                 report.write(
-                    f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
+                    f"**{key.upper()}**: {values} - {calculate_uv_level(round(values, 1)).capitalize()}  "
                 )
             elif key in "aqi":
                 report.write(
-                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
+                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}  "
                 )
             elif key in ["temperature", "apparent temperature"]:
                 report.write(
-                    f"{key.capitalize()}: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+                    f"**{key.capitalize()}**: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K  "
                 )
             else:
                 report.write(f"{key.capitalize()}: {values}  ")
             report.write("\n")
         if namespace.verbosity:
-            print("--- %s seconds ---" % (time.time() - start_time))
+            print("--- %s seconds ---" % (time.time() - START_TIME))
         report.write("\n")
 
 
