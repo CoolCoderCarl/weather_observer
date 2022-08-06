@@ -251,9 +251,7 @@ def report_to_console(
     print()
     print(f"Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"Timezone: {timezone_by_city}")
-    print(
-        f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}"
-    )
+    print(f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}")
     print(f"Elevation under sea level: {elevation} m")
     for key, values in weather_data.items():
         if key in ["relative humidity", "cloud percents"]:
