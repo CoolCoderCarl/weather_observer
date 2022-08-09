@@ -22,21 +22,24 @@ For using this program the main thing you have to do it is to register here http
 The second thing - download file `cities.txt` from repository.  
 By the way, if you have no `cities.txt` file, it will create with your current location city name.
 
-
-To execute program just pass the API key and get information in console. Or pass additional key `--file` and get report file.
+There are 4 ways to use this programm:
+1. Get current location and send report to console (default(just pass the API key))
+2. Get current location and send report to file (`--output-file`)
+3. Get cities from file and send report to console (`--input-file`)
+4. Get cities from file and send report to file (`--input-file --output-file`)
 
 ### Example 
 
-Regular usage, will get cities from `cities.txt`, if not exist will create with current location city:  
+Default usage:
 `weather_observer.exe --api-key YOUR_API_KEY`
 
 If need report to file:  
-`weather_observer.exe --api-key YOUR_API_KEY --file`
+`weather_observer.exe --api-key YOUR_API_KEY --output-file`
 
-If you want to get info only about you current location just pass `--local`:  
-`weather_observer.exe --api-key YOUR_API_KEY --local`
+If you want to get info about city or cities `--input-file`:  
+`weather_observer.exe --api-key YOUR_API_KEY --input-file`
 
-If you want to get more info about programm running pass `--verbosity` when using `--file`, have no sense while `--local` have been passed:  
-`weather_observer.exe --api-key YOUR_API_KEY --file --verbosity`
+If you want to get more info about programm running pass `--verbosity` when using `--output-file`, have no sense while `--input-file` have been passed:  
+`weather_observer.exe --api-key YOUR_API_KEY --output-file --verbosity`
 
 You also can wrap up invocation with `.sh` or `.bat`. Think about it.
