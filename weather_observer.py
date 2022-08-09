@@ -22,6 +22,7 @@ REPORT_FORMAT = ".md"
 # Time when program execution started
 START_TIME = time.time()
 
+WEATHER_API = "https://api.weatherbit.io/v2.0/"
 # Using in get_current_city func to retrieve current city name
 IP_SITE = "http://ipinfo.io/"
 OPEN_ELEVATION_API = "https://api.open-elevation.com/api/v1/lookup?locations="
@@ -138,7 +139,7 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
     """
     try:
         r = requests.get(
-            f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={namespace.apikey}"
+            f"{WEATHER_API}current?city={city_name}&country={country_code}&key={namespace.apikey}"
         )
         return r.json()["data"][0]
     except requests.exceptions.RequestException as req_ex:
