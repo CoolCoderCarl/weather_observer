@@ -22,6 +22,7 @@ REPORT_FORMAT = ".md"
 # Time when program execution started
 START_TIME = time.time()
 
+WEATHER_API = "https://api.weatherbit.io/v2.0/"
 # Using in get_current_city func to retrieve current city name
 IP_SITE = "http://ipinfo.io/"
 OPEN_ELEVATION_API = "https://api.open-elevation.com/api/v1/lookup?locations="
@@ -34,19 +35,19 @@ MMHG = 0.750062  # Millimeter of mercury
 
 
 required_values = [
+    "wind direction",
     "relative humidity",
     "part of day",
     "pressure",
     "cloud percents",
     "solar radiation",
     "wind speed",
-    "wind direction",
     "sea level pressure",
-    "snowfall",
-    "uv",
-    "aqi",
-    "temperature",
     "apparent temperature",
+    "snowfall",
+    "aqi",
+    "uv",
+    "temperature",
 ]
 
 ignored_values = [
@@ -59,6 +60,7 @@ ignored_values = [
     "city_name",
     "wind_cdir_full",
     "vis",
+    "sources",
     "h_angle",
     "sunset",
     "dni",
@@ -137,7 +139,7 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
     """
     try:
         r = requests.get(
-            f"https://api.weatherbit.io/v2.0/current?city={city_name}&country={country_code}&key={namespace.apikey}"
+            f"{WEATHER_API}current?city={city_name}&country={country_code}&key={namespace.apikey}"
         )
         return r.json()["data"][0]
     except requests.exceptions.RequestException as req_ex:
@@ -292,7 +294,13 @@ def report_to_console(
     print(f"Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"Timezone: {timezone_by_city}")
     print(f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}")
-    print(f"Elevation under sea level: {elevation} m")
+    print(f"Elevation above sea level: {elevation} m")
+    print(
+        f"Water temperature in location: {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp), 1)} K"
+    )
+    print(
+        f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}"
+    )
     for key, values in weather_data.items():
         if key in ["relative humidity", "cloud percents"]:
             print(f"{key.capitalize()}: {values}%")
@@ -320,12 +328,6 @@ def report_to_console(
             )
         else:
             print(f"{key.capitalize()}: {values}")
-    print(
-        f"Water temperature in location: {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp), 1)} K"
-    )
-    print(
-        f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}"
-    )
     input("Enter any key to escape...")
 
 
@@ -364,6 +366,12 @@ def report_to_file(
             f"#### Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
         )
         report.write(f"**Elevation under sea level:** {elevation} m  ")
+        report.write(
+            f"**Water temperature in location:** {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp),1)} K  \n"
+        )
+        report.write(
+            f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  "
+        )
         for key, values in weather_data.items():
             if key in ["relative humidity", "cloud percents"]:
                 report.write(f"{key.capitalize()}: {values}%  ")
@@ -392,12 +400,6 @@ def report_to_file(
             else:
                 report.write(f"{key.capitalize()}: {values}  ")
             report.write("\n")
-        report.write(
-            f"**Water temperature in location:** {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp),1)} K  \n"
-        )
-        report.write(
-            f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  "
-        )
         report.write("\n")
         if namespace.verbosity:
             print("--- %s seconds ---" % (time.time() - START_TIME))
