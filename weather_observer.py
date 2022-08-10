@@ -97,16 +97,27 @@ def get_args():
         type=str,
     )
 
+    # Specify filenames ?
     root_parser.add_argument(
-        "--file", dest="file", action=argparse.BooleanOptionalAction
+        "--input-file",
+        dest="infile",
+        action=argparse.BooleanOptionalAction,
+        help="Get cities from files",
     )
 
     root_parser.add_argument(
-        "--local", dest="local", action=argparse.BooleanOptionalAction
+        "--output-file",
+        dest="outfile",
+        action=argparse.BooleanOptionalAction,
+        help="Send report to file",
     )
 
     root_parser.add_argument(
-        "-v", "--verbosity", dest="verbosity", action=argparse.BooleanOptionalAction
+        "-v",
+        "--verbosity",
+        dest="verbosity",
+        action=argparse.BooleanOptionalAction,
+        help="Send messages about processing",
     )
 
     return root_parser
@@ -365,40 +376,40 @@ def report_to_file(
         report.write(
             f"#### Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
         )
-        report.write(f"**Elevation under sea level:** {elevation} m  ")
+        report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
             f"**Water temperature in location:** {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp),1)} K  \n"
         )
         report.write(
-            f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  "
+            f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  \n"
         )
         for key, values in weather_data.items():
             if key in ["relative humidity", "cloud percents"]:
-                report.write(f"{key.capitalize()}: {values}%  ")
+                report.write(f"{key.capitalize()}: {values}%  \n")
             elif key in ["pressure", "sea level pressure"]:
                 report.write(
-                    f"**{key.capitalize()}:** {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa  "
+                    f"**{key.capitalize()}:** {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa  \n"
                 )
             elif key in "solar radiation":
-                report.write(f"{key.capitalize()}: {values} Watt/m^2  ")
+                report.write(f"{key.capitalize()}: {values} Watt/m^2  \n")
             elif key in "wind speed":
-                report.write(f"{key.capitalize()}: {values} m/s  ")
+                report.write(f"{key.capitalize()}: {values} m/s  \n")
             elif key in "snowfall":
-                report.write(f"{key.capitalize()}: {values} mm/hr  ")
+                report.write(f"{key.capitalize()}: {values} mm/hr  \n")
             elif key in "uv":
                 report.write(
-                    f"**{key.upper()}:** {values} - {calculate_uv_level(round(values, 1)).capitalize()}  "
+                    f"**{key.upper()}:** {values} - {calculate_uv_level(round(values, 1)).capitalize()}  \n"
                 )
             elif key in "aqi":
                 report.write(
-                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}  "
+                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}  \n"
                 )
             elif key in ["temperature", "apparent temperature"]:
                 report.write(
-                    f"**{key.capitalize()}:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K  "
+                    f"**{key.capitalize()}:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K  \n"
                 )
             else:
-                report.write(f"{key.capitalize()}: {values}  ")
+                report.write(f"{key.capitalize()}: {values}  \n")
             report.write("\n")
         report.write("\n")
         if namespace.verbosity:
@@ -430,7 +441,7 @@ def report_weather_info(
     :param geomagnetic_field:
     :return:
     """
-    if namespace.file:
+    if namespace.outfile:
         report_to_file(
             report_time,
             weather_data,
@@ -568,17 +579,20 @@ def prepare_target_location_info(city_name: str):
 
 def which_target():
     """
-    Decide which target location local or got from file will reported
+    Decide which target location got from file or local will reported
     :return:
     """
-    if namespace.local:
-        city_name = get_current_city()
-        prepare_target_location_info(city_name)
-    else:
+    if namespace.infile:
         for city_name in load_cities_from_file():
             prepare_target_location_info(city_name)
+    else:
+        city_name = get_current_city()
+        prepare_target_location_info(city_name)
 
 
 if __name__ == "__main__":
     if namespace.apikey:
         which_target()
+    else:
+        print("API key did not provide")
+        sys.exit(1)
