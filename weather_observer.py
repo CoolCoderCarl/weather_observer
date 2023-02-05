@@ -309,7 +309,9 @@ def report_to_console(
     print(f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}")
     print(f"Elevation above sea level: {elevation} m")
     print(
-        f"Water temperature in location: {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp), 1)} K"
+        f"Water temperature in location: {water_temp} C "
+        f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
+        f"| {round(celsius_to_kelvin(water_temp), 1)} K"
     )
     print(
         f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}"
@@ -321,11 +323,15 @@ def report_to_console(
             print(f"Cloud percents: {values}%")
         elif key in ["pres"]:
             print(
-                f"Pressure: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
+                f"Pressure: {round(values, 2)} mb "
+                f"| {round(values*MMHG,2)} mmHg "
+                f"| {round(values*KPA, 2)} kPa"
             )
         elif key in ["slp"]:
             print(
-                f"Sea level ressure: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
+                f"Sea level ressure: {round(values, 2)} mb "
+                f"| {round(values*MMHG,2)} mmHg "
+                f"| {round(values*KPA, 2)} kPa"
             )
         elif key in ["solar_rad"]:
             print(f"Solar radiation: {values} Watt/m^2")
@@ -345,11 +351,15 @@ def report_to_console(
             )
         elif key in ["temp"]:
             print(
-                f"Temperature: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+                f"Temperature: {values} C "
+                f"| {round(celsius_to_fahrenheit(values), 1)} F "
+                f"| {round(celsius_to_kelvin(values),1)} K"
             )
         elif key in ["app_temp"]:
             print(
-                f"Apparent temperature: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+                f"Apparent temperature: {values} C "
+                f"| {round(celsius_to_fahrenheit(values), 1)} F "
+                f"| {round(celsius_to_kelvin(values),1)} K"
             )
         elif key in ["pod"]:
             print(f"Part of a day: {values}")
@@ -394,7 +404,9 @@ def report_to_file(
         )
         report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
-            f"**Water temperature in location:** {water_temp} C | {round(celsius_to_fahrenheit(water_temp), 1)} F | {round(celsius_to_kelvin(water_temp),1)} K  \n"
+            f"**Water temperature in location:** {water_temp} C "
+            f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
+            f"| {round(celsius_to_kelvin(water_temp),1)} K  \n"
         )
         report.write(
             f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  \n"
@@ -406,11 +418,15 @@ def report_to_file(
                 report.write(f"Cloud percents: {values}% \n")
             elif key in ["pres"]:
                 report.write(
-                    f"**Pressure:** {round(values, 2)} mb | {round(values * MMHG, 2)} mmHg | {round(values * KPA, 2)} kPa \n"
+                    f"**Pressure:** {round(values, 2)} mb "
+                    f"| {round(values * MMHG, 2)} mmHg "
+                    f"| {round(values * KPA, 2)} kPa \n"
                 )
             elif key in ["slp"]:
                 report.write(
-                    f"Sea level ressure: {round(values, 2)} mb | {round(values * MMHG, 2)} mmHg | {round(values * KPA, 2)} kPa \n"
+                    f"Sea level ressure: {round(values, 2)} mb "
+                    f"| {round(values * MMHG, 2)} mmHg "
+                    f"| {round(values * KPA, 2)} kPa \n"
                 )
             elif key in ["solar_rad"]:
                 report.write(f"**Solar radiation:** {values} Watt/m^2 \n")
@@ -430,11 +446,15 @@ def report_to_file(
                 )
             elif key in ["temp"]:
                 report.write(
-                    f"**Temperature:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values), 1)} K \n"
+                    f"**Temperature:** {values} C "
+                    f"| {round(celsius_to_fahrenheit(values), 1)} F "
+                    f"| {round(celsius_to_kelvin(values), 1)} K \n"
                 )
             elif key in ["app_temp"]:
                 report.write(
-                    f"**Apparent temperature:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values), 1)} K \n"
+                    f"**Apparent temperature:** {values} C "
+                    f"| {round(celsius_to_fahrenheit(values), 1)} F "
+                    f"| {round(celsius_to_kelvin(values), 1)} K \n"
                 )
             elif key in ["pod"]:
                 report.write(f"Part of a day: {values} \n")
