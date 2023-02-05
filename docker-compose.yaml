@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+  weather_observer:
+    container_name: weather_observer
+    image: h0d0user/weather_observer:latest
+    restart: always
+#    environment:
+    networks:
+      - weather_observer_net
+#    volumes:
+#      - "./settings.txt:/opt/settings.txt"
+
+networks:
+  weather_observer_net:
