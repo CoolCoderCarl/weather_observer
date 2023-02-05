@@ -34,27 +34,32 @@ KPA = 0.1  # Kilo Pascal
 MMHG = 0.750062  # Millimeter of mercury
 
 
-required_values = [
-    "wind direction",
-    "relative humidity",
-    "part of day",
-    "pressure",
-    "cloud percents",
-    "solar radiation",
-    "wind speed",
-    "sea level pressure",
-    "apparent temperature",
-    "snowfall",
-    "aqi",
-    "uv",
-    "temperature",
-]
+# required_values = [
+#     "wind direction",
+#     "relative humidity",
+#     "part of day",
+#     "pressure",
+#     "cloud percents",
+#     "solar radiation",
+#     "wind speed",
+#     "sea level pressure",
+#     "apparent temperature",
+#     "snowfall",
+#     "aqi",
+#     "uv",
+#     "temperature",
+# ]
+#
+# required_values = ["wind_cdir_full", "rh", "pod", "pres", "clouds", "solar_rad",
+#                    "wind_spd", "slp", "app_temp", "snow", "aqi", "uv", "temp"]
 
-ignored_values = [
+
+VALUES_TO_DELETE = [
     "lon",
     "timezone",
     "ob_time",
     "country_code",
+    "gust",
     "ts",
     "state_code",
     "city_name",
@@ -155,6 +160,8 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
         return r.json()["data"][0]
     except requests.exceptions.RequestException as req_ex:
         print(req_ex)
+    except BaseException as base_err:
+        print(base_err)
 
 
 def calculate_uv_level(uv_value: float) -> str:
@@ -259,15 +266,10 @@ def prepare_weather_info(
     :param geomagnetic_field:
     :return:
     """
-    report_values = []
-    for k, v in request_weather_info(country_code, city_name).items():
-        if k in ignored_values:
-            pass
-        else:
-            report_values.append(v)
-    result = {
-        required_values[idx]: report_values[idx] for idx in range(len(required_values))
-    }
+
+    result = request_weather_info(country_code, city_name)
+    for v in VALUES_TO_DELETE:
+        del result[v]
 
     report_weather_info(
         REPORT_TIME,
@@ -313,30 +315,44 @@ def report_to_console(
         f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}"
     )
     for key, values in weather_data.items():
-        if key in ["relative humidity", "cloud percents"]:
-            print(f"{key.capitalize()}: {values}%")
-        elif key in ["pressure", "sea level pressure"]:
+        if key in ["rh"]:
+            print(f"Relative humidity: {values}%")
+        elif key in ["clouds"]:
+            print(f"Cloud percents: {values}%")
+        elif key in ["pres"]:
             print(
-                f"{key.capitalize()}: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
+                f"Pressure: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
             )
-        elif key in "solar radiation":
-            print(f"{key.capitalize()}: {values} Watt/m^2")
-        elif key in "wind speed":
-            print(f"{key.capitalize()}: {values} m/s")
-        elif key in "snowfall":
-            print(f"{key.capitalize()}: {values} mm/hr")
-        elif key in "uv":
+        elif key in ["slp"]:
+            print(
+                f"Sea level ressure: {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa"
+            )
+        elif key in ["solar_rad"]:
+            print(f"Solar radiation: {values} Watt/m^2")
+        elif key in ["wind_spd"]:
+            print(f"Wind speed: {values} m/s")
+        elif key in ["wind_cdir"]:
+            print(f"Wind direction: {values}")
+        elif key in ["snow"]:
+            print(f"Snowfall: {values} mm/hr")
+        elif key in ["uv"]:
             print(
                 f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
             )
-        elif key in "aqi":
+        elif key in ["aqi"]:
             print(
                 f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
             )
-        elif key in ["temperature", "apparent temperature"]:
+        elif key in ["temp"]:
             print(
-                f"{key.capitalize()}: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+                f"Temperature: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
             )
+        elif key in ["app_temp"]:
+            print(
+                f"Apparent temperature: {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K"
+            )
+        elif key in ["pod"]:
+            print(f"Part of a day: {values}")
         else:
             print(f"{key.capitalize()}: {values}")
     input("Enter any key to escape...")
@@ -384,30 +400,44 @@ def report_to_file(
             f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  \n"
         )
         for key, values in weather_data.items():
-            if key in ["relative humidity", "cloud percents"]:
-                report.write(f"{key.capitalize()}: {values}%  \n")
-            elif key in ["pressure", "sea level pressure"]:
+            if key in ["rh"]:
+                report.write(f"**Relative humidity:** {values}% \n")
+            elif key in ["clouds"]:
+                report.write(f"Cloud percents: {values}% \n")
+            elif key in ["pres"]:
                 report.write(
-                    f"**{key.capitalize()}:** {round(values, 2)} mb | {round(values*MMHG,2)} mmHg | {round(values*KPA, 2)} kPa  \n"
+                    f"**Pressure:** {round(values, 2)} mb | {round(values * MMHG, 2)} mmHg | {round(values * KPA, 2)} kPa \n"
                 )
-            elif key in "solar radiation":
-                report.write(f"{key.capitalize()}: {values} Watt/m^2  \n")
-            elif key in "wind speed":
-                report.write(f"{key.capitalize()}: {values} m/s  \n")
-            elif key in "snowfall":
-                report.write(f"{key.capitalize()}: {values} mm/hr  \n")
-            elif key in "uv":
+            elif key in ["slp"]:
                 report.write(
-                    f"**{key.upper()}:** {values} - {calculate_uv_level(round(values, 1)).capitalize()}  \n"
+                    f"Sea level ressure: {round(values, 2)} mb | {round(values * MMHG, 2)} mmHg | {round(values * KPA, 2)} kPa \n"
                 )
-            elif key in "aqi":
+            elif key in ["solar_rad"]:
+                report.write(f"**Solar radiation:** {values} Watt/m^2 \n")
+            elif key in ["wind_spd"]:
+                report.write(f"Wind speed: {values} m/s \n")
+            elif key in ["wind_cdir"]:
+                report.write(f"Wind direction: {values} \n")
+            elif key in ["snow"]:
+                report.write(f"Snowfall: {values} mm/hr \n")
+            elif key in ["uv"]:
                 report.write(
-                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}  \n"
+                    f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()} \n"
                 )
-            elif key in ["temperature", "apparent temperature"]:
+            elif key in ["aqi"]:
                 report.write(
-                    f"**{key.capitalize()}:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values),1)} K  \n"
+                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()} \n"
                 )
+            elif key in ["temp"]:
+                report.write(
+                    f"**Temperature:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values), 1)} K \n"
+                )
+            elif key in ["app_temp"]:
+                report.write(
+                    f"**Apparent temperature:** {values} C | {round(celsius_to_fahrenheit(values), 1)} F | {round(celsius_to_kelvin(values), 1)} K \n"
+                )
+            elif key in ["pod"]:
+                report.write(f"Part of a day: {values} \n")
             else:
                 report.write(f"{key.capitalize()}: {values}  \n")
             report.write("\n")
