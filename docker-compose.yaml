@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+
+  weather_observer:
+    container_name: weather_observer
+    image: h0d0user/weather_observer:latest
+    restart: always
+    environment:
+      - TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN
+      - TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID
+    networks:
+      - weather_observer_net
+    volumes:
+#      - "./settings.txt:/opt/settings.txt"
+      - "./cities.txt:/opt/cities.txt"
+
+networks:
+  weather_observer_net:
