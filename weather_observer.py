@@ -347,7 +347,7 @@ def report_to_console(
             )
         elif key in ["slp"]:
             print(
-                f"Sea level ressure: {round(values, 2)} mb "
+                f"Sea level pressure: {round(values, 2)} mb "
                 f"| {round(values*MMHG,2)} mmHg "
                 f"| {round(values*KPA, 2)} kPa"
             )
@@ -418,11 +418,9 @@ def report_to_telegram(
                 TELEGRAM_API_URL,
                 json={
                     "chat_id": TELEGRAM_CHAT_ID,
-                    "text": f"## Country: {country_name} | City name: {city_name.capitalize()}  \n"
-                    f"\n"
-                    f"### Timezone: {timezone_by_city}  \n"
-                    f"\n"
-                    f"#### Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
+                    "text": f"Country: #{country_name} | City name: #{city_name.capitalize()}\n"
+                    f"Timezone: {timezone_by_city}  \n"
+                    f"Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}\n"
                     f"\n"
                     f"Elevation under sea level: {elevation} m  \n"
                     f"\n"
@@ -433,20 +431,21 @@ def report_to_telegram(
                     f"Geomagnetic field: {geomagnetic_field} - "
                     f"{calculate_kp_level(geomagnetic_field).capitalize()}  \n"
                     f"\n"
-                    f"Relative humidity: {weather_data['rh']}\n"
+                    f"Relative humidity: {weather_data['rh']}%\n"
                     f"\n"
                     f"Cloud percents: {weather_data['clouds']}%\n"
                     f"\n"
-                    f"Pressure: {weather_data['pres']}\n"
+                    f"Pressure: {round(weather_data['pres'], 2)} mb "
+                    f"| {round(weather_data['pres']*MMHG,2)} mmHg "
+                    f"| {round(weather_data['pres']*KPA, 2)} kPa"
                     f"\n"
-                    f"Relative humidity: {round(weather_data['slp'],2)} mb "
+                    f"Sea level pressure: {round(weather_data['slp'],2)} mb "
                     f"| {round(weather_data['slp'] * MMHG, 2)} mmHg "
                     f"| {round(weather_data['slp'] * KPA, 2)} kPa\n"
                     f"\n"
-                    f"**Solar radiation: {weather_data['solar_rad']} Watt/m^2\n"
+                    f"Solar radiation: {weather_data['solar_rad']} Watt/m^2\n"
                     f"\n"
                     f"Wind speed: {weather_data['wind_spd']} m/s\n"
-                    f"\n"
                     f"Wind direction: {weather_data['wind_cdir']}\n"
                     f"\n"
                     f"Snowfall: {weather_data['snow']} mm/hr\n"
@@ -460,7 +459,6 @@ def report_to_telegram(
                     f"Temperature: {weather_data['temp']} C "
                     f"| {round(celsius_to_fahrenheit(weather_data['temp']), 1)} F "
                     f"| {round(celsius_to_kelvin(weather_data['temp']), 1)} K\n"
-                    f"\n"
                     f"Apparent temperature: {weather_data['app_temp']} C "
                     f"| {round(celsius_to_fahrenheit(weather_data['app_temp']), 1)} F "
                     f"| {round(celsius_to_kelvin(weather_data['app_temp']), 1)} K \n"
@@ -476,8 +474,8 @@ def report_to_telegram(
                 logging.error(
                     f"Not sent: {response.reason}. Status code: {response.status_code}"
                 )
-        except KeyError as keyerr:
-            logging.error(keyerr)
+        except KeyError as key_err:
+            logging.error(f"Error while post to telegram: {key_err}")
     except KeyError as key_err:
         logging.error(key_err)
     except Exception as err:
@@ -540,7 +538,7 @@ def report_to_file(
                 )
             elif key in ["slp"]:
                 report.write(
-                    f"Sea level ressure: {round(values, 2)} mb "
+                    f"Sea level pressure: {round(values, 2)} mb "
                     f"| {round(values * MMHG, 2)} mmHg "
                     f"| {round(values * KPA, 2)} kPa \n"
                 )
