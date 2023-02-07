@@ -411,8 +411,8 @@ def report_to_telegram(
         TELEGRAM_API_URL = (
             f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         )
-        TELEGRAM_CHAT_ID = os.environ["TELE_CHAT_ID"]
-
+        TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+        logging.info(f"Report about {city_name} in {country_name} !")
         try:
             response = rq.post(
                 TELEGRAM_API_URL,
