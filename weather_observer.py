@@ -1,5 +1,6 @@
 import argparse
 import codecs
+import logging
 import os
 import sys
 import time
@@ -7,10 +8,20 @@ from datetime import datetime
 from typing import Dict, List
 
 import requests
+import requests as rq
 from geopy.geocoders import Nominatim
 from pygismeteo import Gismeteo
 from pytz import timezone
 from timezonefinder import TimezoneFinder
+
+# Logging
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.ERROR
+)
 
 # Input file
 CITIES_FILE = "cities.txt"
@@ -118,6 +129,13 @@ def get_args():
     )
 
     root_parser.add_argument(
+        "--telegram",
+        dest="telegram",
+        action=argparse.BooleanOptionalAction,
+        help="Send report to telegram",
+    )
+
+    root_parser.add_argument(
         "-v",
         "--verbosity",
         dest="verbosity",
@@ -159,9 +177,9 @@ def request_weather_info(country_code: str, city_name: str) -> Dict:
         )
         return r.json()["data"][0]
     except requests.exceptions.RequestException as req_ex:
-        print(req_ex)
+        logging.error(req_ex)
     except BaseException as base_err:
-        print(base_err)
+        logging.error(base_err)
 
 
 def calculate_uv_level(uv_value: float) -> str:
@@ -329,7 +347,7 @@ def report_to_console(
             )
         elif key in ["slp"]:
             print(
-                f"Sea level ressure: {round(values, 2)} mb "
+                f"Sea level pressure: {round(values, 2)} mb "
                 f"| {round(values*MMHG,2)} mmHg "
                 f"| {round(values*KPA, 2)} kPa"
             )
@@ -366,6 +384,102 @@ def report_to_console(
         else:
             print(f"{key.capitalize()}: {values}")
     input("Enter any key to escape...")
+
+
+def report_to_telegram(
+    weather_data: dict,
+    city_name: str,
+    timezone_by_city: str,
+    country_name: str,
+    elevation: int,
+    water_temp: float,
+    geomagnetic_field: int,
+):
+    """
+    Report info about weather to telegram
+    :param weather_data:
+    :param city_name:
+    :param timezone_by_city:
+    :param country_name:
+    :param elevation:
+    :param water_temp:
+    :param geomagnetic_field:
+    :return:
+    """
+    try:
+        TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+        TELEGRAM_API_URL = (
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        )
+        TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+        logging.info(f"Report about {city_name} in {country_name} !")
+        try:
+            response = rq.post(
+                TELEGRAM_API_URL,
+                json={
+                    "chat_id": TELEGRAM_CHAT_ID,
+                    "text": f"Country: #{country_name} | City name: #{city_name.capitalize()}\n"
+                    f"Timezone: {timezone_by_city}  \n"
+                    f"Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}\n"
+                    f"\n"
+                    f"Elevation under sea level: {elevation} m  \n"
+                    f"\n"
+                    f"Water temperature in location: {water_temp} C "
+                    f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
+                    f"| {round(celsius_to_kelvin(water_temp),1)} K  \n"
+                    f"\n"
+                    f"Geomagnetic field: {geomagnetic_field} - "
+                    f"{calculate_kp_level(geomagnetic_field).capitalize()}  \n"
+                    f"\n"
+                    f"Relative humidity: {weather_data['rh']}%\n"
+                    f"\n"
+                    f"Cloud percents: {weather_data['clouds']}%\n"
+                    f"\n"
+                    f"Pressure: {round(weather_data['pres'], 2)} mb "
+                    f"| {round(weather_data['pres']*MMHG,2)} mmHg "
+                    f"| {round(weather_data['pres']*KPA, 2)} kPa"
+                    f"\n"
+                    f"Sea level pressure: {round(weather_data['slp'],2)} mb "
+                    f"| {round(weather_data['slp'] * MMHG, 2)} mmHg "
+                    f"| {round(weather_data['slp'] * KPA, 2)} kPa\n"
+                    f"\n"
+                    f"Solar radiation: {weather_data['solar_rad']} Watt/m^2\n"
+                    f"\n"
+                    f"Wind speed: {weather_data['wind_spd']} m/s\n"
+                    f"Wind direction: {weather_data['wind_cdir']}\n"
+                    f"\n"
+                    f"Snowfall: {weather_data['snow']} mm/hr\n"
+                    f"\n"
+                    f"UV (UltraViolet): {weather_data['uv']} - "
+                    f"{calculate_uv_level(round(weather_data['uv'], 1)).capitalize()}\n"
+                    f"\n"
+                    f"AQI (Air Quality Index): {weather_data['aqi']} - "
+                    f"{calculate_aqi_level(weather_data['aqi']).capitalize()}\n"
+                    f"\n"
+                    f"Temperature: {weather_data['temp']} C "
+                    f"| {round(celsius_to_fahrenheit(weather_data['temp']), 1)} F "
+                    f"| {round(celsius_to_kelvin(weather_data['temp']), 1)} K\n"
+                    f"Apparent temperature: {weather_data['app_temp']} C "
+                    f"| {round(celsius_to_fahrenheit(weather_data['app_temp']), 1)} F "
+                    f"| {round(celsius_to_kelvin(weather_data['app_temp']), 1)} K \n"
+                    f"\n"
+                    f"Part of a day: {weather_data['pod']}\n",
+                },
+            )
+            if response.status_code == 200:
+                logging.info(
+                    f"Sent: {response.reason}. Status code: {response.status_code}"
+                )
+            else:
+                logging.error(
+                    f"Not sent: {response.reason}. Status code: {response.status_code}"
+                )
+        except KeyError as key_err:
+            logging.error(f"Error while post to telegram: {key_err}")
+    except KeyError as key_err:
+        logging.error(key_err)
+    except Exception as err:
+        logging.error(err)
 
 
 def report_to_file(
@@ -424,7 +538,7 @@ def report_to_file(
                 )
             elif key in ["slp"]:
                 report.write(
-                    f"Sea level ressure: {round(values, 2)} mb "
+                    f"Sea level pressure: {round(values, 2)} mb "
                     f"| {round(values * MMHG, 2)} mmHg "
                     f"| {round(values * KPA, 2)} kPa \n"
                 )
@@ -478,8 +592,9 @@ def report_weather_info(
     geomagnetic_field: int,
 ):
     """
-    Report weather information to console as default or in file with timestamp
+    Report weather information to console as default or in file with timestamp or in telegram
     If pass --file as arg switch reporting to file
+    If pass --telegram as arg switch reporting to telegram
     Else report to console
     :param report_time:
     :param weather_data:
@@ -494,6 +609,16 @@ def report_weather_info(
     if namespace.outfile:
         report_to_file(
             report_time,
+            weather_data,
+            city_name,
+            timezone_by_city,
+            country_name,
+            elevation,
+            water_temp,
+            geomagnetic_field,
+        )
+    elif namespace.telegram:
+        report_to_telegram(
             weather_data,
             city_name,
             timezone_by_city,
@@ -526,8 +651,8 @@ def load_cities_from_file() -> List[str]:
             cities = cities_file.read().split()
             return cities
     except FileNotFoundError as file_not_found_err:
-        print(file_not_found_err)
-        print(f"Will create {CITIES_FILE}...")
+        logging.error(file_not_found_err)
+        logging.info(f"Will create {CITIES_FILE}...")
     finally:
         if os.path.exists(CITIES_FILE):
             pass
@@ -547,7 +672,7 @@ def get_current_city() -> str:
     try:
         return requests.get(IP_SITE).json()["city"]
     except requests.exceptions.RequestException as request_exception:
-        print(request_exception)
+        logging.error(request_exception)
 
 
 def get_elevation_by_ll(latitude: str, longitude: str) -> int:
@@ -562,7 +687,7 @@ def get_elevation_by_ll(latitude: str, longitude: str) -> int:
             "results"
         ][0]["elevation"]
     except requests.exceptions.RequestException as req_ex:
-        print(req_ex)
+        logging.error(req_ex)
 
 
 def get_water_temp_by_ll(latitude: float, longitude: float) -> float:
@@ -614,17 +739,48 @@ def prepare_target_location_info(city_name: str):
     country_code = full_address_by_ll.get("country_code", "")
     country_name = full_address_by_ll.get("country", "")
 
-    prepare_weather_info(
-        country_name,
-        country_code,
-        city_name,
-        timezone_by_city,
-        get_elevation_by_ll(latitude=latitude, longitude=longitude),
-        get_water_temp_by_ll(latitude=location.latitude, longitude=location.longitude),
-        get_geomagnetic_field_by_ll(
-            latitude=location.latitude, longitude=location.longitude
-        ),
-    )
+    if namespace.telegram:
+        while True:
+            # Get list if hours from file ?
+            if get_time_by_timezone(timezone_name=timezone_by_city).split()[1] in [
+                "06:00:00",
+                "08:00:00",
+                "10:00:00",
+                "12:00:00",
+                "14:00:00",
+                "16:00:00",
+                "18:00:00",
+                "20:00:00",
+                "22:00:00",
+            ]:
+                logging.info("It is time to report !")
+                prepare_weather_info(
+                    country_name,
+                    country_code,
+                    city_name,
+                    timezone_by_city,
+                    get_elevation_by_ll(latitude=latitude, longitude=longitude),
+                    get_water_temp_by_ll(
+                        latitude=location.latitude, longitude=location.longitude
+                    ),
+                    get_geomagnetic_field_by_ll(
+                        latitude=location.latitude, longitude=location.longitude
+                    ),
+                )
+    else:
+        prepare_weather_info(
+            country_name,
+            country_code,
+            city_name,
+            timezone_by_city,
+            get_elevation_by_ll(latitude=latitude, longitude=longitude),
+            get_water_temp_by_ll(
+                latitude=location.latitude, longitude=location.longitude
+            ),
+            get_geomagnetic_field_by_ll(
+                latitude=location.latitude, longitude=location.longitude
+            ),
+        )
 
 
 def which_target():
@@ -644,5 +800,5 @@ if __name__ == "__main__":
     if namespace.apikey:
         which_target()
     else:
-        print("API key did not provide")
+        logging.error("API key did not provide")
         sys.exit(1)
