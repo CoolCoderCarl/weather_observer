@@ -741,13 +741,17 @@ def prepare_target_location_info(city_name: str):
 
     if namespace.telegram:
         while True:
+            # Get list if hours from file ?
             if get_time_by_timezone(timezone_name=timezone_by_city).split()[1] in [
                 "06:00:00",
-                "09:00:00",
+                "08:00:00",
+                "10:00:00",
                 "12:00:00",
-                "15:00:00",
+                "14:00:00",
+                "16:00:00",
                 "18:00:00",
-                "21:00:00",
+                "20:00:00",
+                "22:00:00",
             ]:
                 logging.info("It is time to report !")
                 prepare_weather_info(
