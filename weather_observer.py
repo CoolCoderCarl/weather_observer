@@ -325,64 +325,55 @@ def report_to_console(
     print(f"Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"Timezone: {timezone_by_city}")
     print(f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}")
+    print()
+    print(f"Part of a day: {weather_data['pod']}")
     print(f"Elevation above sea level: {elevation} m")
-    print(
-        f"Water temperature in location: {water_temp} C "
-        f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
-        f"| {round(celsius_to_kelvin(water_temp), 1)} K"
-    )
     print(
         f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}"
     )
-    for key, values in weather_data.items():
-        if key in ["rh"]:
-            print(f"Relative humidity: {values}%")
-        elif key in ["clouds"]:
-            print(f"Cloud percents: {values}%")
-        elif key in ["pres"]:
-            print(
-                f"Pressure: {round(values, 2)} mb "
-                f"| {round(values*MMHG,2)} mmHg "
-                f"| {round(values*KPA, 2)} kPa"
-            )
-        elif key in ["slp"]:
-            print(
-                f"Sea level pressure: {round(values, 2)} mb "
-                f"| {round(values*MMHG,2)} mmHg "
-                f"| {round(values*KPA, 2)} kPa"
-            )
-        elif key in ["solar_rad"]:
-            print(f"Solar radiation: {values} Watt/m^2")
-        elif key in ["wind_spd"]:
-            print(f"Wind speed: {values} m/s")
-        elif key in ["wind_cdir"]:
-            print(f"Wind direction: {values}")
-        elif key in ["snow"]:
-            print(f"Snowfall: {values} mm/hr")
-        elif key in ["uv"]:
-            print(
-                f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()}"
-            )
-        elif key in ["aqi"]:
-            print(
-                f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()}"
-            )
-        elif key in ["temp"]:
-            print(
-                f"Temperature: {values} C "
-                f"| {round(celsius_to_fahrenheit(values), 1)} F "
-                f"| {round(celsius_to_kelvin(values),1)} K"
-            )
-        elif key in ["app_temp"]:
-            print(
-                f"Apparent temperature: {values} C "
-                f"| {round(celsius_to_fahrenheit(values), 1)} F "
-                f"| {round(celsius_to_kelvin(values),1)} K"
-            )
-        elif key in ["pod"]:
-            print(f"Part of a day: {values}")
-        else:
-            print(f"{key.capitalize()}: {values}")
+    print()
+    print(
+        f"Pressure: {round(weather_data['pres'], 2)} mb "
+        f"| {round(weather_data['pres'] * MMHG, 2)} mmHg "
+        f"| {round(weather_data['pres'] * KPA, 2)} kPa"
+    )
+    print(
+        f"Sea level pressure: {round(weather_data['slp'], 2)} mb "
+        f"| {round(weather_data['slp'] * MMHG, 2)} mmHg "
+        f"| {round(weather_data['slp'] * KPA, 2)} kPa"
+    )
+    print()
+    print(f"Wind speed: {weather_data['wind_spd']} m/s")
+    print(f"Wind direction: {weather_data['wind_cdir']}")
+    print(f"Relative humidity: {weather_data['rh']}%")
+    print(f"Cloud percents: {weather_data['clouds']}%")
+    print(f"Solar radiation: {weather_data['solar_rad']} Watt/m^2")
+    print(f"Snowfall: {weather_data['snow']} mm/hr")
+    print()
+    print(
+        f"UV (UltraViolet): {weather_data['uv']} - "
+        f"{calculate_uv_level(round(weather_data['uv'], 1)).capitalize()}"
+    )
+    print(
+        f"AQI (Air Quality Index): {weather_data['aqi']} - "
+        f"{calculate_aqi_level(weather_data['aqi']).capitalize()}"
+    )
+    print()
+    print(
+        f"Temperature: {weather_data['temp']} C "
+        f"| {round(celsius_to_fahrenheit(weather_data['temp']), 1)} F "
+        f"| {round(celsius_to_kelvin(weather_data['temp']), 1)} K"
+    )
+    print(
+        f"Apparent temperature: {weather_data['app_temp']} C "
+        f"| {round(celsius_to_fahrenheit(weather_data['app_temp']), 1)} F "
+        f"| {round(celsius_to_kelvin(weather_data['app_temp']), 1)} K "
+    )
+    print(
+        f"Water temperature in location: {water_temp} C "
+        f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
+        f"| {round(celsius_to_kelvin(water_temp), 1)} K  "
+    )
     input("Enter any key to escape...")
 
 
@@ -419,65 +410,61 @@ def report_to_telegram(
                 json={
                     "chat_id": TELEGRAM_CHAT_ID,
                     "text": f"Country: #{country_name} | City name: #{city_name.capitalize()}"
-                            f"\n"
+                    f"\n"
                     f"Timezone: {timezone_by_city}"
-                            f"\n"
+                    f"\n"
                     f"Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}"
-                            f"\n"
+                    f"\n"
+                    f"\n"
+                    f"Part of a day: {weather_data['pod']}"
                     f"\n"
                     f"Elevation under sea level: {elevation} m"
-                            f"\n"
                     f"\n"
                     f"Geomagnetic field: {geomagnetic_field} - "
                     f"{calculate_kp_level(geomagnetic_field).capitalize()}"
-                            f"\n"
                     f"\n"
-                    f"Relative humidity: {weather_data['rh']}%"
-                            f"\n"
-                    f"\n"
-                    f"Cloud percents: {weather_data['clouds']}%"
-                            f"\n"
                     f"\n"
                     f"Pressure: {round(weather_data['pres'], 2)} mb "
                     f"| {round(weather_data['pres']*MMHG,2)} mmHg "
                     f"| {round(weather_data['pres']*KPA, 2)} kPa"
-                            f"\n"
+                    f"\n"
                     f"Sea level pressure: {round(weather_data['slp'],2)} mb "
                     f"| {round(weather_data['slp'] * MMHG, 2)} mmHg "
                     f"| {round(weather_data['slp'] * KPA, 2)} kPa"
-                            f"\n"
+                    f"\n"
                     f"\n"
                     f"Wind speed: {weather_data['wind_spd']} m/s"
-                            f"\n"
+                    f"\n"
                     f"Wind direction: {weather_data['wind_cdir']}"
-                            f"\n"
+                    f"\n"
+                    f"Relative humidity: {weather_data['rh']}%"
+                    f"\n"
+                    f"Cloud percents: {weather_data['clouds']}%"
+                    f"\n"
+                    f"Solar radiation: {weather_data['solar_rad']} Watt/m^2"
                     f"\n"
                     f"Snowfall: {weather_data['snow']} mm/hr\n"
                     f"\n"
-                    f"Solar radiation: {weather_data['solar_rad']} Watt/m^2"
-                            f"\n"
+                    f"\n"
                     f"UV (UltraViolet): {weather_data['uv']} - "
                     f"{calculate_uv_level(round(weather_data['uv'], 1)).capitalize()}"
-                            f"\n"
                     f"\n"
                     f"AQI (Air Quality Index): {weather_data['aqi']} - "
                     f"{calculate_aqi_level(weather_data['aqi']).capitalize()}"
-                            f"\n"
+                    f"\n"
                     f"\n"
                     f"Temperature: {weather_data['temp']} C "
                     f"| {round(celsius_to_fahrenheit(weather_data['temp']), 1)} F "
                     f"| {round(celsius_to_kelvin(weather_data['temp']), 1)} K"
-                            f"\n"
+                    f"\n"
                     f"Apparent temperature: {weather_data['app_temp']} C "
                     f"| {round(celsius_to_fahrenheit(weather_data['app_temp']), 1)} F "
                     f"| {round(celsius_to_kelvin(weather_data['app_temp']), 1)} K "
-                            f"\n"
+                    f"\n"
                     f"Water temperature in location: {water_temp} C "
                     f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
                     f"| {round(celsius_to_kelvin(water_temp),1)} K  "
-                            f"\n"                            
-                    f"\n"
-                    f"Part of a day: {weather_data['pod']}\n",
+                    f"\n",
                 },
             )
             if response.status_code == 200:
@@ -532,64 +519,64 @@ def report_to_file(
         )
         report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
-            f"**Water temperature in location:** {water_temp} C "
-            f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
-            f"| {round(celsius_to_kelvin(water_temp),1)} K  \n"
+            f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  \n"
         )
+        report.write(
+            f"Country: {country_name} | City name: {city_name.capitalize()}  \n"
+        )
+        report.write(f"Timezone: {timezone_by_city}  \n")
+        report.write(
+            f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
+        )
+        report.write("\n")
+        report.write(f"Part of a day: {weather_data['pod']}  \n")
+        report.write(f"Elevation above sea level: {elevation} m  \n")
         report.write(
             f"Geomagnetic field: {geomagnetic_field} - {calculate_kp_level(geomagnetic_field).capitalize()}  \n"
         )
-        for key, values in weather_data.items():
-            if key in ["rh"]:
-                report.write(f"**Relative humidity:** {values}% \n")
-            elif key in ["clouds"]:
-                report.write(f"Cloud percents: {values}% \n")
-            elif key in ["pres"]:
-                report.write(
-                    f"**Pressure:** {round(values, 2)} mb "
-                    f"| {round(values * MMHG, 2)} mmHg "
-                    f"| {round(values * KPA, 2)} kPa \n"
-                )
-            elif key in ["slp"]:
-                report.write(
-                    f"Sea level pressure: {round(values, 2)} mb "
-                    f"| {round(values * MMHG, 2)} mmHg "
-                    f"| {round(values * KPA, 2)} kPa \n"
-                )
-            elif key in ["solar_rad"]:
-                report.write(f"**Solar radiation:** {values} Watt/m^2 \n")
-            elif key in ["wind_spd"]:
-                report.write(f"Wind speed: {values} m/s \n")
-            elif key in ["wind_cdir"]:
-                report.write(f"Wind direction: {values} \n")
-            elif key in ["snow"]:
-                report.write(f"Snowfall: {values} mm/hr \n")
-            elif key in ["uv"]:
-                report.write(
-                    f"{key.upper()}: {values} - {calculate_uv_level(round(values, 1)).capitalize()} \n"
-                )
-            elif key in ["aqi"]:
-                report.write(
-                    f"{key.upper()}: {values} - {calculate_aqi_level(values).capitalize()} \n"
-                )
-            elif key in ["temp"]:
-                report.write(
-                    f"**Temperature:** {values} C "
-                    f"| {round(celsius_to_fahrenheit(values), 1)} F "
-                    f"| {round(celsius_to_kelvin(values), 1)} K \n"
-                )
-            elif key in ["app_temp"]:
-                report.write(
-                    f"**Apparent temperature:** {values} C "
-                    f"| {round(celsius_to_fahrenheit(values), 1)} F "
-                    f"| {round(celsius_to_kelvin(values), 1)} K \n"
-                )
-            elif key in ["pod"]:
-                report.write(f"Part of a day: {values} \n")
-            else:
-                report.write(f"{key.capitalize()}: {values}  \n")
-            report.write("\n")
         report.write("\n")
+        report.write(
+            f"Pressure: {round(weather_data['pres'], 2)} mb "
+            f"| {round(weather_data['pres'] * MMHG, 2)} mmHg "
+            f"| {round(weather_data['pres'] * KPA, 2)} kPa  \n"
+        )
+        report.write(
+            f"Sea level pressure: {round(weather_data['slp'], 2)} mb "
+            f"| {round(weather_data['slp'] * MMHG, 2)} mmHg "
+            f"| {round(weather_data['slp'] * KPA, 2)} kPa  \n"
+        )
+        report.write("\n")
+        report.write(f"Wind speed: {weather_data['wind_spd']} m/s  \n")
+        report.write(f"Wind direction: {weather_data['wind_cdir']}  \n")
+        report.write(f"Relative humidity: {weather_data['rh']}%  \n")
+        report.write(f"Cloud percents: {weather_data['clouds']}%  \n")
+        report.write(f"**Solar radiation**: {weather_data['solar_rad']} Watt/m^2  \n")
+        report.write(f"Snowfall: {weather_data['snow']} mm/hr  \n")
+        report.write("\n")
+        report.write(
+            f"UV (UltraViolet): {weather_data['uv']} - "
+            f"{calculate_uv_level(round(weather_data['uv'], 1)).capitalize()}  \n"
+        )
+        report.write(
+            f"AQI (Air Quality Index): {weather_data['aqi']} - "
+            f"{calculate_aqi_level(weather_data['aqi']).capitalize()}  \n"
+        )
+        report.write("\n")
+        report.write(
+            f"**Temperature**: {weather_data['temp']} C "
+            f"| {round(celsius_to_fahrenheit(weather_data['temp']), 1)} F "
+            f"| {round(celsius_to_kelvin(weather_data['temp']), 1)} K  \n"
+        )
+        report.write(
+            f"**Apparent temperature**: {weather_data['app_temp']} C "
+            f"| {round(celsius_to_fahrenheit(weather_data['app_temp']), 1)} F "
+            f"| {round(celsius_to_kelvin(weather_data['app_temp']), 1)} K  \n"
+        )
+        report.write(
+            f"**Water temperature in location**: {water_temp} C "
+            f"| {round(celsius_to_fahrenheit(water_temp), 1)} F "
+            f"| {round(celsius_to_kelvin(water_temp), 1)} K  \n"
+        )
         if namespace.verbosity:
             print("--- %s seconds ---" % (time.time() - START_TIME))
         report.write("\n")
