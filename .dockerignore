@@ -1,0 +1,20 @@
+# Git
+.git
+.github
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+docker-compose.yaml
+**/Dockerfile
+**/Containerfile*
+.docker
+.dockerignore
+
+# Meta
+README.md
+LICENSE
+
+# Configuration
+changelog.json
