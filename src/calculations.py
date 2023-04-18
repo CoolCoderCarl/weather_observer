@@ -77,3 +77,7 @@ def celsius_to_kelvin(celsius: float) -> float:
     :return:
     """
     return celsius + 273.15
+
+
+if __name__ == "__main__":
+    pass

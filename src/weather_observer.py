@@ -4,16 +4,15 @@ import os
 import sys
 import time
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict
 
 import requests
 import requests as rq
 from geopy.geocoders import Nominatim
-from pygismeteo import Gismeteo
-from pytz import timezone
 from timezonefinder import TimezoneFinder
 
 import calculations
+import get_info
 
 # Logging
 logging.basicConfig(
@@ -24,8 +23,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s", level=logging.ERROR
 )
 
-# Input file
-CITIES_FILE = "cities.txt"
 
 # Output file
 REPORT_NAME = "weather_report_"
@@ -35,9 +32,7 @@ REPORT_FORMAT = ".md"
 start_time = time.time()
 
 WEATHER_API = "https://api.weatherbit.io/v2.0/"
-# Using in get_current_city func to retrieve current city name
-IP_SITE = "http://ipinfo.io/"
-OPEN_ELEVATION_API = "https://api.open-elevation.com/api/v1/lookup?locations="
+
 
 report_time = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
 
@@ -151,20 +146,6 @@ def get_args():
 namespace = get_args().parse_args(sys.argv[1:])
 
 
-def get_time_by_timezone(timezone_name: str) -> str:
-    """
-    Get current time in UTC the convert to passed time zone
-    :param timezone_name: The name like Europe/Madrid
-    :return:
-    """
-    date_time_format = "%Y-%m-%d %H:%M:%S %z"
-
-    now_utc = datetime.now(timezone("UTC"))
-
-    now_timezone = now_utc.astimezone(timezone(timezone_name))
-    return now_timezone.strftime(date_time_format)
-
-
 def request_weather_info(country_code: str, city_name: str) -> Dict[str, any]:
     """
     Send GET request to weatherbit resource fetching info about weather about transferred countries & cities
@@ -227,7 +208,9 @@ def report_to_console(
     print()
     print(f"Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"Timezone: {timezone_by_city}")
-    print(f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}")
+    print(
+        f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
+    )
     print()
     print(f"Part of a day: {weather_data['pod']}")
     print(f"Elevation above sea level: {elevation} m")
@@ -316,7 +299,7 @@ def report_to_telegram(
                     f"\n"
                     f"Timezone: {timezone_by_city}"
                     f"\n"
-                    f"Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}"
+                    f"Time in location {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
                     f"\n"
                     f"\n"
                     f"Part of a day: {weather_data['pod']}"
@@ -379,11 +362,11 @@ def report_to_telegram(
                     f"Not sent: {response.reason}. Status code: {response.status_code}"
                 )
         except KeyError as key_err:
-            logging.error(f"Error while post to telegram: {key_err}")
+            logging.error(f"Err while post to telegram: {key_err}")
     except KeyError as key_err:
-        logging.error(key_err)
-    except Exception as err:
-        logging.error(err)
+        logging.error(f"Err while loading telegram environment variable: {key_err}")
+    except BaseException as err:
+        logging.error(f"Base err while loading telegram environment variable: {err}")
 
 
 def report_to_file(
@@ -418,7 +401,7 @@ def report_to_file(
         )
         report.write(f"### Timezone: {timezone_by_city}  \n")
         report.write(
-            f"#### Time in location {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
+            f"#### Time in location {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
         )
         report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
@@ -429,7 +412,7 @@ def report_to_file(
         )
         report.write(f"Timezone: {timezone_by_city}  \n")
         report.write(
-            f"Time in location: {get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
+            f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
         )
         report.write("\n")
         report.write(f"Part of a day: {weather_data['pod']}  \n")
@@ -543,85 +526,6 @@ def report_weather_info(
         )
 
 
-def load_cities_from_file() -> List[str]:
-    """
-    Load cities from file
-    Try to load from file, if exception caught, send message about err
-    Finally create new file with current city and return it
-    :return:
-    """
-    try:
-        with open(CITIES_FILE, "r") as cities_file:
-            cities = cities_file.read().split()
-            return cities
-    except FileNotFoundError as file_not_found_err:
-        logging.error(file_not_found_err)
-        logging.info(f"Will create {CITIES_FILE}...")
-    finally:
-        if os.path.exists(CITIES_FILE):
-            pass
-        else:
-            with open(CITIES_FILE, "w") as cities_file:
-                cities_file.write(get_current_city())
-            with open(CITIES_FILE, "r") as cities_file:
-                cities = cities_file.read().split()
-                return cities
-
-
-def get_current_city() -> str:
-    """
-    Return city name by trusted provider info
-    :return:
-    """
-    try:
-        return requests.get(IP_SITE).json()["city"]
-    except requests.exceptions.RequestException as request_exception:
-        logging.error(request_exception)
-
-
-def get_elevation_by_ll(latitude: str, longitude: str) -> int:
-    """
-    Get elevation(altitude) from open API by latitude & longitude
-    :param latitude:
-    :param longitude:
-    :return:
-    """
-    try:
-        return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()[
-            "results"
-        ][0]["elevation"]
-    except requests.exceptions.RequestException as req_ex:
-        logging.error(req_ex)
-
-
-def get_water_temp_by_ll(latitude: float, longitude: float) -> float:
-    """
-    Get water temperature from https://www.gismeteo.com/api/ by latitude & longitude
-    :param latitude:
-    :param longitude:
-    :return:
-    """
-    gm = Gismeteo()
-    city_id = gm.search.by_coordinates(latitude=latitude, longitude=longitude, limit=1)[
-        0
-    ].id
-    return gm.current.by_id(city_id).temperature.water.c
-
-
-def get_geomagnetic_field_by_ll(latitude: float, longitude: float) -> int:
-    """
-    Get water temperature from https://www.gismeteo.com/api/ by latitude & longitude
-    :param latitude:
-    :param longitude:
-    :return:
-    """
-    gm = Gismeteo()
-    city_id = gm.search.by_coordinates(latitude=latitude, longitude=longitude, limit=1)[
-        0
-    ].id
-    return gm.current.by_id(city_id).gm
-
-
 def prepare_target_location_info(city_name: str):
     """
     Prepare info such as country name, country code, city name and timezone for target city,
@@ -646,7 +550,9 @@ def prepare_target_location_info(city_name: str):
     if namespace.telegram:
         while True:
             # Get list if hours from file ?
-            if get_time_by_timezone(timezone_name=timezone_by_city).split()[1] in [
+            if get_info.get_time_by_timezone(timezone_name=timezone_by_city).split()[
+                1
+            ] in [
                 "06:00:00",
                 "08:00:00",
                 "10:00:00",
@@ -664,13 +570,13 @@ def prepare_target_location_info(city_name: str):
                     city_name=city_name,
                     timezone_by_city=timezone_by_city,
                     country_name=country_name,
-                    elevation=get_elevation_by_ll(
+                    elevation=get_info.get_elevation_by_ll(
                         latitude=latitude, longitude=longitude
                     ),
-                    water_temp=get_water_temp_by_ll(
+                    water_temp=get_info.get_water_temp_by_ll(
                         latitude=location.latitude, longitude=location.longitude
                     ),
-                    geomagnetic_field=get_geomagnetic_field_by_ll(
+                    geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
                         latitude=location.latitude, longitude=location.longitude
                     ),
                 )
@@ -681,11 +587,13 @@ def prepare_target_location_info(city_name: str):
             city_name=city_name,
             timezone_by_city=timezone_by_city,
             country_name=country_name,
-            elevation=get_elevation_by_ll(latitude=latitude, longitude=longitude),
-            water_temp=get_water_temp_by_ll(
+            elevation=get_info.get_elevation_by_ll(
+                latitude=latitude, longitude=longitude
+            ),
+            water_temp=get_info.get_water_temp_by_ll(
                 latitude=location.latitude, longitude=location.longitude
             ),
-            geomagnetic_field=get_geomagnetic_field_by_ll(
+            geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
                 latitude=location.latitude, longitude=location.longitude
             ),
         )
@@ -697,10 +605,10 @@ def which_target():
     :return:
     """
     if namespace.infile:
-        for city_name in load_cities_from_file():
+        for city_name in get_info.load_cities_from_file():
             prepare_target_location_info(city_name)
     else:
-        city_name = get_current_city()
+        city_name = get_info.get_current_city()
         prepare_target_location_info(city_name)
 
 
