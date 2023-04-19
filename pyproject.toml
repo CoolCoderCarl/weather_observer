@@ -1,2 +1,11 @@
+[project]
+name = "weather_observer"
+description = "Weather observer"
+version = "3.1.1"
+license = "GNU GPL v3.0"
+authors = [
+    "CoolCoderCarl",
+]
+
 [tool.black]
 line-length = 125
