@@ -16,15 +16,19 @@ CITIES_FILE = "cities.txt"
 
 # Logging
 logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
 )
 
 logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.ERROR
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.ERROR,
 )
 
 
-def get_time_by_timezone(timezone_name: str) -> str:
+def get_time_by_timezone(
+    timezone_name: str,
+) -> str:
     """
     Get current time in UTC the convert to passed time zone
     :param timezone_name: The name like Europe/Madrid
@@ -49,7 +53,10 @@ def get_current_city() -> str:
         logging.error(request_exception)
 
 
-def get_elevation_by_ll(latitude: str, longitude: str) -> int:
+def get_elevation_by_ll(
+    latitude: str,
+    longitude: str,
+) -> int:
     """
     Get elevation(altitude) from open API by latitude & longitude
     :param latitude:
@@ -57,14 +64,15 @@ def get_elevation_by_ll(latitude: str, longitude: str) -> int:
     :return:
     """
     try:
-        return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()[
-            "results"
-        ][0]["elevation"]
+        return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()["results"][0]["elevation"]
     except requests.exceptions.RequestException as req_ex:
         logging.error(req_ex)
 
 
-def get_water_temp_by_ll(latitude: float, longitude: float) -> float:
+def get_water_temp_by_ll(
+    latitude: float,
+    longitude: float,
+) -> float:
     """
     Get water temperature from https://www.gismeteo.com/api/ by latitude & longitude
     :param latitude:
@@ -72,13 +80,18 @@ def get_water_temp_by_ll(latitude: float, longitude: float) -> float:
     :return:
     """
     gm = Gismeteo()
-    city_id = gm.search.by_coordinates(latitude=latitude, longitude=longitude, limit=1)[
-        0
-    ].id
+    city_id = gm.search.by_coordinates(
+        latitude=latitude,
+        longitude=longitude,
+        limit=1,
+    )[0].id
     return gm.current.by_id(city_id).temperature.water.c
 
 
-def get_geomagnetic_field_by_ll(latitude: float, longitude: float) -> int:
+def get_geomagnetic_field_by_ll(
+    latitude: float,
+    longitude: float,
+) -> int:
     """
     Get water temperature from https://www.gismeteo.com/api/ by latitude & longitude
     :param latitude:
@@ -86,9 +99,11 @@ def get_geomagnetic_field_by_ll(latitude: float, longitude: float) -> int:
     :return:
     """
     gm = Gismeteo()
-    city_id = gm.search.by_coordinates(latitude=latitude, longitude=longitude, limit=1)[
-        0
-    ].id
+    city_id = gm.search.by_coordinates(
+        latitude=latitude,
+        longitude=longitude,
+        limit=1,
+    )[0].id
     return gm.current.by_id(city_id).gm
 
 
@@ -100,7 +115,10 @@ def load_cities_from_file() -> List[str]:
     :return:
     """
     try:
-        with open(CITIES_FILE, "r") as cities_file:
+        with open(
+            CITIES_FILE,
+            "r",
+        ) as cities_file:
             cities = cities_file.read().split()
             return cities
     except FileNotFoundError as file_not_found_err:
@@ -110,9 +128,15 @@ def load_cities_from_file() -> List[str]:
         if os.path.exists(CITIES_FILE):
             pass
         else:
-            with open(CITIES_FILE, "w") as cities_file:
+            with open(
+                CITIES_FILE,
+                "w",
+            ) as cities_file:
                 cities_file.write(get_current_city())
-            with open(CITIES_FILE, "r") as cities_file:
+            with open(
+                CITIES_FILE,
+                "r",
+            ) as cities_file:
                 cities = cities_file.read().split()
                 return cities
 

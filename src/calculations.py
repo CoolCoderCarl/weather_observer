@@ -1,4 +1,6 @@
-def calculate_uv_level(uv_value: float) -> str:
+def calculate_uv_level(
+    uv_value: float,
+) -> str:
     """
     Passed UV value as float and return string value on the scale
     :param uv_value:
@@ -16,7 +18,9 @@ def calculate_uv_level(uv_value: float) -> str:
         return "purple"
 
 
-def calculate_aqi_level(aqi_value: int) -> str:
+def calculate_aqi_level(
+    aqi_value: int,
+) -> str:
     """
     Passed Air Quality Index value as integer and return string value on the scale
     :param aqi_value:
@@ -36,7 +40,9 @@ def calculate_aqi_level(aqi_value: int) -> str:
         return "hazardous"
 
 
-def calculate_kp_level(kp_value: int) -> str:
+def calculate_kp_level(
+    kp_value: int,
+) -> str:
     """
     Passed Kp value as int and return string value on the scale
     The Kp-index describes the disturbance of the Earth’s magnetic field caused by the solar wind
@@ -61,7 +67,9 @@ def calculate_kp_level(kp_value: int) -> str:
         return "intense storm"
 
 
-def celsius_to_fahrenheit(celsius: float) -> float:
+def celsius_to_fahrenheit(
+    celsius: float,
+) -> float:
     """
     Convert celsius to fahrenheit
     :param celsius:
@@ -70,7 +78,9 @@ def celsius_to_fahrenheit(celsius: float) -> float:
     return (celsius * 9 / 5) + 32
 
 
-def celsius_to_kelvin(celsius: float) -> float:
+def celsius_to_kelvin(
+    celsius: float,
+) -> float:
     """
     Convert celsius to kelvin
     :param celsius:

@@ -15,13 +15,9 @@ import calculations
 import get_info
 
 # Logging
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.ERROR
-)
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.ERROR)
 
 
 # Output file
@@ -146,7 +142,10 @@ def get_args():
 namespace = get_args().parse_args(sys.argv[1:])
 
 
-def request_weather_info(country_code: str, city_name: str) -> Dict[str, any]:
+def request_weather_info(
+    country_code: str,
+    city_name: str,
+) -> Dict[str, any,]:
     """
     Send GET request to weatherbit resource fetching info about weather about transferred countries & cities
     :param country_code:
@@ -154,9 +153,7 @@ def request_weather_info(country_code: str, city_name: str) -> Dict[str, any]:
     :return:
     """
     try:
-        r = requests.get(
-            f"{WEATHER_API}current?city={city_name}&country={country_code}&key={namespace.apikey}"
-        )
+        r = requests.get(f"{WEATHER_API}current?city={city_name}&country={country_code}&key={namespace.apikey}")
         return r.json()["data"][0]
     except requests.exceptions.RequestException as req_ex:
         logging.error(f"Err while request weather info from API - {req_ex}")
@@ -178,7 +175,10 @@ def prepare_weather_data(
     :return:
     """
 
-    result = request_weather_info(country_code, city_name)
+    result = request_weather_info(
+        country_code,
+        city_name,
+    )
     for v in VALUES_TO_DELETE:
         del result[v]
 
@@ -208,15 +208,11 @@ def report_to_console(
     print()
     print(f"Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"Timezone: {timezone_by_city}")
-    print(
-        f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
-    )
+    print(f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}")
     print()
     print(f"Part of a day: {weather_data['pod']}")
     print(f"Elevation above sea level: {elevation} m")
-    print(
-        f"Geomagnetic field: {geomagnetic_field} - {calculations.calculate_kp_level(geomagnetic_field).capitalize()}"
-    )
+    print(f"Geomagnetic field: {geomagnetic_field} - {calculations.calculate_kp_level(geomagnetic_field).capitalize()}")
     print()
     print(
         f"Pressure: {round(weather_data['pres'], 2)} mb "
@@ -285,9 +281,7 @@ def report_to_telegram(
     """
     try:
         TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-        TELEGRAM_API_URL = (
-            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        )
+        TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
         logging.info(f"Report about {city_name} in {country_name} !")
         try:
@@ -354,13 +348,9 @@ def report_to_telegram(
                 },
             )
             if response.status_code == 200:
-                logging.info(
-                    f"Sent: {response.reason}. Status code: {response.status_code}"
-                )
+                logging.info(f"Sent: {response.reason}. Status code: {response.status_code}")
             else:
-                logging.error(
-                    f"Not sent: {response.reason}. Status code: {response.status_code}"
-                )
+                logging.error(f"Not sent: {response.reason}. Status code: {response.status_code}")
         except KeyError as key_err:
             logging.error(f"Err while post to telegram: {key_err}")
     except KeyError as key_err:
@@ -392,28 +382,22 @@ def report_to_file(
     :return:
     """
     with open(
-        f"{REPORT_NAME}{report_time}{REPORT_FORMAT}", "a", encoding="utf-8"
+        f"{REPORT_NAME}{report_time}{REPORT_FORMAT}",
+        "a",
+        encoding="utf-8",
     ) as report:
         if namespace.verbosity:
             print(f"Gathering info about {city_name.capitalize()} in {country_name}...")
-        report.write(
-            f"## Country: {country_name} | City name: {city_name.capitalize()}  \n"
-        )
+        report.write(f"## Country: {country_name} | City name: {city_name.capitalize()}  \n")
         report.write(f"### Timezone: {timezone_by_city}  \n")
-        report.write(
-            f"#### Time in location {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
-        )
+        report.write(f"#### Time in location {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
         report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
             f"Geomagnetic field: {geomagnetic_field} - {calculations.calculate_kp_level(geomagnetic_field).capitalize()}  \n"
         )
-        report.write(
-            f"Country: {country_name} | City name: {city_name.capitalize()}  \n"
-        )
+        report.write(f"Country: {country_name} | City name: {city_name.capitalize()}  \n")
         report.write(f"Timezone: {timezone_by_city}  \n")
-        report.write(
-            f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n"
-        )
+        report.write(f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
         report.write("\n")
         report.write(f"Part of a day: {weather_data['pod']}  \n")
         report.write(f"Elevation above sea level: {elevation} m  \n")
@@ -526,95 +510,155 @@ def report_weather_info(
         )
 
 
-def prepare_target_location_info(city_name: str):
+def prepare_target_location_info(
+    city_name: str,
+) -> Dict:
     """
     Prepare info such as country name, country code, city name and timezone for target city,
     then pass it to next func prepare_weather_info
     :return:
     """
-    # Separate and return longitude & latitude with different funcs - Class ?
     geolocator = Nominatim(user_agent="geoapiExercises")
     location = geolocator.geocode(city_name)
     longitude = str(location.longitude)
     latitude = str(location.latitude)
 
     obj = TimezoneFinder()
-    timezone_by_city = obj.timezone_at(lng=location.longitude, lat=location.latitude)
+    timezone_by_city = obj.timezone_at(
+        lng=location.longitude,
+        lat=location.latitude,
+    )
 
     loc_ad = geolocator.reverse(latitude + "," + longitude)
     full_address_by_ll = loc_ad.raw["address"]
 
-    country_code = full_address_by_ll.get("country_code", "")
-    country_name = full_address_by_ll.get("country", "")
+    country_code = full_address_by_ll.get(
+        "country_code",
+        "",
+    )
+    country_name = full_address_by_ll.get(
+        "country",
+        "",
+    )
 
+    return {
+        "location": location,
+        "longitude": longitude,
+        "latitude": latitude,
+        "country_name": country_name,
+        "country_code": country_code,
+        "timezone_by_city": timezone_by_city,
+    }
+
+
+def main():
     if namespace.telegram:
         while True:
-            # Get list if hours from file ?
-            if get_info.get_time_by_timezone(timezone_name=timezone_by_city).split()[
-                1
-            ] in [
-                "06:00:00",
-                "08:00:00",
-                "10:00:00",
-                "12:00:00",
-                "14:00:00",
-                "16:00:00",
-                "18:00:00",
-                "20:00:00",
-                "22:00:00",
-            ]:
-                logging.info("It is time to report !")
-                report_weather_info(
-                    report_time=report_time,
-                    weather_data=prepare_weather_data(country_code, city_name),
-                    city_name=city_name,
-                    timezone_by_city=timezone_by_city,
-                    country_name=country_name,
-                    elevation=get_info.get_elevation_by_ll(
-                        latitude=latitude, longitude=longitude
-                    ),
-                    water_temp=get_info.get_water_temp_by_ll(
-                        latitude=location.latitude, longitude=location.longitude
-                    ),
-                    geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
-                        latitude=location.latitude, longitude=location.longitude
-                    ),
-                )
+            if namespace.infile:
+                for city_name in get_info.load_cities_from_file():
+                    if get_info.get_time_by_timezone(
+                        timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
+                    ).split()[1] in [
+                        "06:00:00",
+                        "08:00:00",
+                        "10:00:00",
+                        "12:00:00",
+                        "14:00:00",
+                        "16:00:00",
+                        "18:00:00",
+                        "20:00:00",
+                        "22:00:00",
+                    ]:
+                        logging.info("It is time to report !")
+                        report_weather_info(
+                            report_time=report_time,
+                            weather_data=prepare_weather_data(
+                                prepare_target_location_info(city_name)["country_name"],
+                                city_name,
+                            ),
+                            city_name=city_name,
+                            timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
+                            country_name=prepare_target_location_info(city_name)["country_name"],
+                            elevation=get_info.get_elevation_by_ll(
+                                latitude=prepare_target_location_info(city_name)["latitude"],
+                                longitude=prepare_target_location_info(city_name)["longitude"],
+                            ),
+                            water_temp=get_info.get_water_temp_by_ll(
+                                latitude=prepare_target_location_info(city_name)["latitude"],
+                                longitude=prepare_target_location_info(city_name)["longitude"],
+                            ),
+                            geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
+                                latitude=prepare_target_location_info(city_name)["location"].latitude,
+                                longitude=prepare_target_location_info(city_name)["location"].longitude,
+                            ),
+                        )
+                    else:
+                        city_name = get_info.get_current_city()
+                        if get_info.get_time_by_timezone(
+                            timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
+                        ).split()[1] in [
+                            "06:00:00",
+                            "08:00:00",
+                            "10:00:00",
+                            "12:00:00",
+                            "14:00:00",
+                            "16:00:00",
+                            "18:00:00",
+                            "20:00:00",
+                            "22:00:00",
+                        ]:
+                            logging.info("It is time to report !")
+                            report_weather_info(
+                                report_time=report_time,
+                                weather_data=prepare_weather_data(
+                                    prepare_target_location_info(city_name)["country_name"],
+                                    city_name,
+                                ),
+                                city_name=city_name,
+                                timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
+                                country_name=prepare_target_location_info(city_name)["country_name"],
+                                elevation=get_info.get_elevation_by_ll(
+                                    latitude=prepare_target_location_info(city_name)["latitude"],
+                                    longitude=prepare_target_location_info(city_name)["longitude"],
+                                ),
+                                water_temp=get_info.get_water_temp_by_ll(
+                                    latitude=prepare_target_location_info(city_name)["latitude"],
+                                    longitude=prepare_target_location_info(city_name)["longitude"],
+                                ),
+                                geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
+                                    latitude=prepare_target_location_info(city_name)["location"].latitude,
+                                    longitude=prepare_target_location_info(city_name)["location"].longitude,
+                                ),
+                            )
     else:
+        city_name = get_info.get_current_city()
         report_weather_info(
             report_time=report_time,
-            weather_data=prepare_weather_data(country_code, city_name),
+            weather_data=prepare_weather_data(
+                prepare_target_location_info(city_name)["country_name"],
+                city_name,
+            ),
             city_name=city_name,
-            timezone_by_city=timezone_by_city,
-            country_name=country_name,
+            timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
+            country_name=prepare_target_location_info(city_name)["country_name"],
             elevation=get_info.get_elevation_by_ll(
-                latitude=latitude, longitude=longitude
+                latitude=prepare_target_location_info(city_name)["latitude"],
+                longitude=prepare_target_location_info(city_name)["longitude"],
             ),
             water_temp=get_info.get_water_temp_by_ll(
-                latitude=location.latitude, longitude=location.longitude
+                latitude=prepare_target_location_info(city_name)["location"].latitude,
+                longitude=prepare_target_location_info(city_name)["location"].longitude,
             ),
             geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
-                latitude=location.latitude, longitude=location.longitude
+                latitude=prepare_target_location_info(city_name)["location"].latitude,
+                longitude=prepare_target_location_info(city_name)["location"].longitude,
             ),
         )
 
 
-def which_target():
-    """
-    Decide which target location got from file or local will reported
-    :return:
-    """
-    if namespace.infile:
-        for city_name in get_info.load_cities_from_file():
-            prepare_target_location_info(city_name)
-    else:
-        city_name = get_info.get_current_city()
-        prepare_target_location_info(city_name)
-
-
 if __name__ == "__main__":
     if namespace.apikey:
-        which_target()
+        main()
     else:
         logging.error("API key did not provide")
         sys.exit(1)
