@@ -61,12 +61,12 @@ jobs:
         include:
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: python -m PyInstaller --onefile --clean --workpath /tmp/build --specpath /tmp -F /src/weather_observer.py
+            CMD_BUILD: python -m PyInstaller --onefile --clean --workpath /tmp/build --specpath /tmp -F ./src/weather_observer.py
             OUT_FILE_NAME: weather_observer.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
           - os: ubuntu-latest
             TARGET: ubuntu
-            CMD_BUILD: python -m PyInstaller --onefile --clean --workpath /tmp/build --specpath /tmp -F /src/weather_observer.py
+            CMD_BUILD: python -m PyInstaller --onefile --clean --workpath /tmp/build --specpath /tmp -F ./src/weather_observer.py
             OUT_FILE_NAME: weather_observer
             ASSET_MIME: application/x-binary
 
