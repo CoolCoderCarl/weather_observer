@@ -145,7 +145,7 @@ namespace = get_args().parse_args(sys.argv[1:])
 def request_weather_info(
     country_code: str,
     city_name: str,
-) -> Dict[str, any,]:
+) -> Dict[str, any]:
     """
     Send GET request to weatherbit resource fetching info about weather about transferred countries & cities
     :param country_code:
@@ -166,7 +166,7 @@ def request_weather_info(
 def prepare_weather_data(
     country_code: str,
     city_name: str,
-):
+) -> Dict[str, any]:
     """
     Prepare weather information to better writing into report file
     After result is ready, pass it to the report_weather_info func
@@ -179,10 +179,16 @@ def prepare_weather_data(
         country_code,
         city_name,
     )
-    for v in VALUES_TO_DELETE:
-        del result[v]
-
-    return result
+    try:
+        for v in VALUES_TO_DELETE:
+            del result[v]
+        return result
+    except KeyError as key_err:
+        logging.error(f"Key Err while deleting values - {key_err}")
+        return None
+    except BaseException as base_err:
+        logging.error(f"Base Err while deleting values - {base_err}")
+        return None
 
 
 def report_to_console(
@@ -512,7 +518,7 @@ def report_weather_info(
 
 def prepare_target_location_info(
     city_name: str,
-) -> Dict:
+) -> Dict[str, any]:
     """
     Prepare info such as country name, country code, city name and timezone for target city,
     then pass it to next func prepare_weather_info
@@ -552,7 +558,6 @@ def prepare_target_location_info(
 
 
 def main():
-    get_info.load_cities_from_file()
     if namespace.telegram:
         while True:
             if namespace.infile:
@@ -560,17 +565,17 @@ def main():
                     if get_info.get_time_by_timezone(
                         timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
                     ).split()[1] in [
-                        "06:00:00",
-                        "08:00:00",
-                        "10:00:00",
-                        "12:00:00",
-                        "14:00:00",
-                        "16:00:00",
-                        "18:00:00",
-                        "20:00:00",
-                        "22:00:00",
+                        "06:00",
+                        "08:00",
+                        "10:00",
+                        "12:00",
+                        "14:00",
+                        "16:00",
+                        "18:00",
+                        "20:00",
+                        "22:00",
                     ]:
-                        logging.info("It is time to report !")
+                        logging.info(f"It is time to report ! Will report about - {city_name}")
                         report_weather_info(
                             report_time=report_time,
                             weather_data=prepare_weather_data(
@@ -593,44 +598,44 @@ def main():
                                 longitude=prepare_target_location_info(city_name)["location"].longitude,
                             ),
                         )
-                    else:
-                        city_name = get_info.get_current_city()
-                        if get_info.get_time_by_timezone(
-                            timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
-                        ).split()[1] in [
-                            "06:00:00",
-                            "08:00:00",
-                            "10:00:00",
-                            "12:00:00",
-                            "14:00:00",
-                            "16:00:00",
-                            "18:00:00",
-                            "20:00:00",
-                            "22:00:00",
-                        ]:
-                            logging.info("It is time to report !")
-                            report_weather_info(
-                                report_time=report_time,
-                                weather_data=prepare_weather_data(
-                                    prepare_target_location_info(city_name)["country_name"],
-                                    city_name,
-                                ),
-                                city_name=city_name,
-                                timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
-                                country_name=prepare_target_location_info(city_name)["country_name"],
-                                elevation=get_info.get_elevation_by_ll(
-                                    latitude=prepare_target_location_info(city_name)["latitude"],
-                                    longitude=prepare_target_location_info(city_name)["longitude"],
-                                ),
-                                water_temp=get_info.get_water_temp_by_ll(
-                                    latitude=prepare_target_location_info(city_name)["latitude"],
-                                    longitude=prepare_target_location_info(city_name)["longitude"],
-                                ),
-                                geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
-                                    latitude=prepare_target_location_info(city_name)["location"].latitude,
-                                    longitude=prepare_target_location_info(city_name)["location"].longitude,
-                                ),
-                            )
+            else:
+                city_name = get_info.get_current_city()
+                if get_info.get_time_by_timezone(
+                    timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
+                ).split()[1] in [
+                    "06:00",
+                    "08:00",
+                    "10:00",
+                    "12:00",
+                    "14:00",
+                    "16:00",
+                    "18:00",
+                    "20:00",
+                    "22:00",
+                ]:
+                    logging.info(f"It is time to report ! Will report about - {city_name}")
+                    report_weather_info(
+                        report_time=report_time,
+                        weather_data=prepare_weather_data(
+                            prepare_target_location_info(city_name)["country_name"],
+                            city_name,
+                        ),
+                        city_name=city_name,
+                        timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
+                        country_name=prepare_target_location_info(city_name)["country_name"],
+                        elevation=get_info.get_elevation_by_ll(
+                            latitude=prepare_target_location_info(city_name)["latitude"],
+                            longitude=prepare_target_location_info(city_name)["longitude"],
+                        ),
+                        water_temp=get_info.get_water_temp_by_ll(
+                            latitude=prepare_target_location_info(city_name)["latitude"],
+                            longitude=prepare_target_location_info(city_name)["longitude"],
+                        ),
+                        geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
+                            latitude=prepare_target_location_info(city_name)["location"].latitude,
+                            longitude=prepare_target_location_info(city_name)["location"].longitude,
+                        ),
+                    )
     else:
         city_name = get_info.get_current_city()
         report_weather_info(
