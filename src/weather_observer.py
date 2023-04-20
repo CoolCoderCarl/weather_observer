@@ -559,9 +559,12 @@ def prepare_target_location_info(
 
 def main():
     if namespace.telegram:
+        logging.info("Going to send reports to telegram...")
         while True:
             if namespace.infile:
-                for city_name in get_info.load_cities_from_file():
+                logging.info("Going to load cities from file...")
+                cities = get_info.load_cities_from_file()
+                for city_name in cities:
                     if get_info.get_time_by_timezone(
                         timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
                     ).split()[1] in [
@@ -599,6 +602,7 @@ def main():
                             ),
                         )
             else:
+                logging.info("Going to load cities by ...")
                 city_name = get_info.get_current_city()
                 if get_info.get_time_by_timezone(
                     timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
@@ -664,6 +668,7 @@ def main():
 
 if __name__ == "__main__":
     if namespace.apikey:
+        logging.info("Starting up...")
         main()
     else:
         logging.error("API key did not provide")

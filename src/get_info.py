@@ -22,6 +22,11 @@ logging.basicConfig(
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.WARNING,
+)
+
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.ERROR,
 )
 
@@ -126,10 +131,14 @@ def load_cities_from_file() -> List[str]:
     """
     try:
         if os.stat(CITIES_FILE).st_size == 0:
-            logging.error(f"File {CITIES_FILE} is empty")
-        with open(CITIES_FILE, "r", encoding="utf-8") as cities_file:
-            cities = cities_file.read().split()
-            return cities
+            logging.error(f"File - {CITIES_FILE} - is empty")
+            logging.warning(f"Going to delete {CITIES_FILE}")
+            os.remove(CITIES_FILE)
+            logging.info(f"File {CITIES_FILE} deleted")
+        else:
+            with open(CITIES_FILE, "r", encoding="utf-8") as cities_file:
+                cities = cities_file.read().split()
+                return cities
     except FileNotFoundError as file_not_found_err:
         logging.error(file_not_found_err)
         logging.info(f"Will create {CITIES_FILE}...")
