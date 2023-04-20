@@ -567,15 +567,15 @@ def main():
                     if get_info.get_time_by_timezone(
                         timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
                     ).split()[1] in [
-                        "06:00",
-                        "08:00",
-                        "10:00",
-                        "12:00",
-                        "14:00",
-                        "16:00",
-                        "18:00",
-                        "20:00",
-                        "22:00",
+                        "06:00:00",
+                        "08:00:00",
+                        "10:00:00",
+                        "12:00:00",
+                        "14:00:00",
+                        "16:00:00",
+                        "18:00:00",
+                        "20:00:00",
+                        "22:00:00",
                     ]:
                         logging.info(f"It is time to report ! Will report about - {city_name}")
                         report_weather_info(
@@ -606,15 +606,15 @@ def main():
                 if get_info.get_time_by_timezone(
                     timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
                 ).split()[1] in [
-                    "06:00",
-                    "08:00",
-                    "10:00",
-                    "12:00",
-                    "14:00",
-                    "16:00",
-                    "18:00",
-                    "20:00",
-                    "22:00",
+                    "06:00:00",
+                    "08:00:00",
+                    "10:00:00",
+                    "12:00:00",
+                    "14:00:00",
+                    "16:00:00",
+                    "18:00:00",
+                    "20:00:00",
+                    "22:00:00",
                 ]:
                     logging.info(f"It is time to report ! Will report about - {city_name}")
                     report_weather_info(
