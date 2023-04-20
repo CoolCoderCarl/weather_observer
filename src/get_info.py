@@ -129,6 +129,7 @@ def load_cities_from_file() -> List[str]:
     Finally create new file with current city and return it
     :return:
     """
+    logging.info("Going to load cities from file...")
     try:
         if os.stat(CITIES_FILE).st_size == 0:
             logging.error(f"File - {CITIES_FILE} - is empty")

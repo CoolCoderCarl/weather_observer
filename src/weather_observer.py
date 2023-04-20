@@ -560,10 +560,9 @@ def prepare_target_location_info(
 def main():
     if namespace.telegram:
         logging.info("Going to send reports to telegram...")
+        cities = get_info.load_cities_from_file()
         while True:
             if namespace.infile:
-                logging.info("Going to load cities from file...")
-                cities = get_info.load_cities_from_file()
                 for city_name in cities:
                     if get_info.get_time_by_timezone(
                         timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
