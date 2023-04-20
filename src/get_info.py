@@ -50,7 +50,8 @@ def get_current_city() -> str:
     try:
         return requests.get(IP_SITE).json()["city"]
     except requests.exceptions.RequestException as request_exception:
-        logging.error(request_exception)
+        logging.error(f"Request Err while getting current city from API - {request_exception}")
+        return None
 
 
 def get_elevation_by_ll(
@@ -66,7 +67,8 @@ def get_elevation_by_ll(
     try:
         return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()["results"][0]["elevation"]
     except requests.exceptions.RequestException as req_ex:
-        logging.error(req_ex)
+        logging.error(f"Request Err while getting elevation from API - {req_ex}")
+        return None
 
 
 def get_water_temp_by_ll(
@@ -79,13 +81,17 @@ def get_water_temp_by_ll(
     :param longitude:
     :return:
     """
-    gm = Gismeteo()
-    city_id = gm.search.by_coordinates(
-        latitude=latitude,
-        longitude=longitude,
-        limit=1,
-    )[0].id
-    return gm.current.by_id(city_id).temperature.water.c
+    try:
+        gm = Gismeteo()
+        city_id = gm.search.by_coordinates(
+            latitude=latitude,
+            longitude=longitude,
+            limit=1,
+        )[0].id
+        return gm.current.by_id(city_id).temperature.water.c
+    except BaseException as base_err:
+        logging.error(f"Base Err while getting water temp from API - {base_err}")
+        return None
 
 
 def get_geomagnetic_field_by_ll(
@@ -98,13 +104,17 @@ def get_geomagnetic_field_by_ll(
     :param longitude:
     :return:
     """
-    gm = Gismeteo()
-    city_id = gm.search.by_coordinates(
-        latitude=latitude,
-        longitude=longitude,
-        limit=1,
-    )[0].id
-    return gm.current.by_id(city_id).gm
+    try:
+        gm = Gismeteo()
+        city_id = gm.search.by_coordinates(
+            latitude=latitude,
+            longitude=longitude,
+            limit=1,
+        )[0].id
+        return gm.current.by_id(city_id).gm
+    except BaseException as base_err:
+        logging.error(f"Base Err while getting geomagnetic field from API - {base_err}")
+        return None
 
 
 def load_cities_from_file() -> List[str]:
@@ -115,10 +125,9 @@ def load_cities_from_file() -> List[str]:
     :return:
     """
     try:
-        with open(
-            CITIES_FILE,
-            "r",
-        ) as cities_file:
+        if os.stat(CITIES_FILE).st_size == 0:
+            logging.error(f"File {CITIES_FILE} is empty")
+        with open(CITIES_FILE, "r", encoding="utf-8") as cities_file:
             cities = cities_file.read().split()
             return cities
     except FileNotFoundError as file_not_found_err:
