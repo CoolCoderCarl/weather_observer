@@ -552,6 +552,7 @@ def prepare_target_location_info(
 
 
 def main():
+    get_info.load_cities_from_file()
     if namespace.telegram:
         while True:
             if namespace.infile:
