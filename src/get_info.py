@@ -57,6 +57,9 @@ def get_current_city() -> str:
     except requests.exceptions.RequestException as request_exception:
         logging.error(f"Request Err while getting current city from API - {request_exception}")
         return None
+    except BaseException as base_err:
+        logging.error(f"Base Err while getting current city from API - {base_err}")
+        return None
 
 
 def get_elevation_by_ll(
@@ -73,6 +76,9 @@ def get_elevation_by_ll(
         return requests.get(OPEN_ELEVATION_API + latitude + "," + longitude).json()["results"][0]["elevation"]
     except requests.exceptions.RequestException as req_ex:
         logging.error(f"Request Err while getting elevation from API - {req_ex}")
+        return None
+    except BaseException as base_err:
+        logging.error(f"Base Err while getting elevation from API - {base_err}")
         return None
 
 
