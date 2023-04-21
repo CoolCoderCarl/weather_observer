@@ -2,7 +2,7 @@ FROM python:3.9-alpine as builder
 
 WORKDIR /opt
 
-COPY ["weather_observer.py", "/opt/"]
+ADD ["/src/", "/opt/"]
 COPY requirements.txt requirements.txt
 
 RUN python -m pip install --upgrade pip

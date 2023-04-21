@@ -16,3 +16,6 @@ services:
 
 networks:
   weather_observer_net:
+
+volumes:
+  weather_observer_volume:
