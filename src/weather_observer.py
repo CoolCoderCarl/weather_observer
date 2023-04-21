@@ -179,16 +179,17 @@ def prepare_weather_data(
         country_code,
         city_name,
     )
-    try:
-        for v in VALUES_TO_DELETE:
+    
+    for v in VALUES_TO_DELETE:
+        try:
             del result[v]
+        except KeyError as key_err:
+            logging.error(f"Key Err while deleting values - {key_err}")
+            continue
+        except BaseException as base_err:
+            logging.error(f"Base Err while deleting values - {base_err}")
+            continue
         return result
-    except KeyError as key_err:
-        logging.error(f"Key Err while deleting values - {key_err}")
-        return None
-    except BaseException as base_err:
-        logging.error(f"Base Err while deleting values - {base_err}")
-        return None
 
 
 def report_to_console(
