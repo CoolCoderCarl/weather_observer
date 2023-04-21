@@ -299,7 +299,7 @@ def report_to_telegram(
                     f"\n"
                     f"Timezone: {timezone_by_city}"
                     f"\n"
-                    f"Time:{get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
+                    f"Time: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
                     f"\n"
                     f"\n"
                     f"Part of a day: {weather_data['pod']}"
@@ -396,14 +396,13 @@ def report_to_file(
             print(f"Gathering info about {city_name.capitalize()} in {country_name}...")
         report.write(f"## Country: {country_name} | City name: {city_name.capitalize()}  \n")
         report.write(f"### Timezone: {timezone_by_city}  \n")
-        report.write(f"#### Time: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
         report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
             f"Geomagnetic field: {geomagnetic_field} - {calculations.calculate_kp_level(geomagnetic_field).capitalize()}  \n"
         )
         report.write(f"Country: {country_name} | City name: {city_name.capitalize()}  \n")
         report.write(f"Timezone: {timezone_by_city}  \n")
-        report.write(f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
+        report.write(f"Time: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
         report.write("\n")
         report.write(f"Part of a day: {weather_data['pod']}  \n")
         report.write(f"Elevation above sea level: {elevation} m  \n")
