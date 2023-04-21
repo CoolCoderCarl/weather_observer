@@ -39,12 +39,16 @@ def get_time_by_timezone(
     :param timezone_name: The name like Europe/Madrid
     :return:
     """
-    date_time_format = "%Y-%m-%d %H:%M:%S %z"
+    try:
+        date_time_format = "%Y-%m-%d %H:%M:%S %z"
 
-    now_utc = datetime.now(timezone("UTC"))
+        now_utc = datetime.now(timezone("UTC"))
 
-    now_timezone = now_utc.astimezone(timezone(timezone_name))
-    return now_timezone.strftime(date_time_format)
+        now_timezone = now_utc.astimezone(timezone(timezone_name))
+        return now_timezone.strftime(date_time_format)
+    except BaseException as base_err:
+        logging.error(f"Base Err while getting time by timezone - {base_err}")
+        return None
 
 
 def get_current_city() -> str:

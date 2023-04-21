@@ -8,6 +8,7 @@ from typing import Dict
 
 import requests
 import requests as rq
+from geopy.adapters import AdapterHTTPError
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 
@@ -169,7 +170,6 @@ def prepare_weather_data(
 ) -> Dict[str, any]:
     """
     Prepare weather information to better writing into report file
-    After result is ready, pass it to the report_weather_info func
     :param country_code:
     :param city_name:
     :return:
@@ -214,7 +214,7 @@ def report_to_console(
     print()
     print(f"Country: {country_name} | City name: {city_name.capitalize()}")
     print(f"Timezone: {timezone_by_city}")
-    print(f"Time in location: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}")
+    print(f"Time: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}")
     print()
     print(f"Part of a day: {weather_data['pod']}")
     print(f"Elevation above sea level: {elevation} m")
@@ -258,7 +258,7 @@ def report_to_console(
         f"| {round(calculations.celsius_to_kelvin(weather_data['app_temp']), 1)} K "
     )
     print(
-        f"Water temperature in location: {water_temp} C "
+        f"Water temperature: {water_temp} C "
         f"| {round(calculations.celsius_to_fahrenheit(water_temp), 1)} F "
         f"| {round(calculations.celsius_to_kelvin(water_temp), 1)} K  "
     )
@@ -299,7 +299,7 @@ def report_to_telegram(
                     f"\n"
                     f"Timezone: {timezone_by_city}"
                     f"\n"
-                    f"Time in location {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
+                    f"Time:{get_info.get_time_by_timezone(timezone_name=timezone_by_city)}"
                     f"\n"
                     f"\n"
                     f"Part of a day: {weather_data['pod']}"
@@ -347,7 +347,7 @@ def report_to_telegram(
                     f"| {round(calculations.celsius_to_fahrenheit(weather_data['app_temp']), 1)} F "
                     f"| {round(calculations.celsius_to_kelvin(weather_data['app_temp']), 1)} K "
                     f"\n"
-                    f"Water temperature in location: {water_temp} C "
+                    f"Water temperature: {water_temp} C "
                     f"| {round(calculations.celsius_to_fahrenheit(water_temp), 1)} F "
                     f"| {round(calculations.celsius_to_kelvin(water_temp), 1)} K  "
                     f"\n",
@@ -396,7 +396,7 @@ def report_to_file(
             print(f"Gathering info about {city_name.capitalize()} in {country_name}...")
         report.write(f"## Country: {country_name} | City name: {city_name.capitalize()}  \n")
         report.write(f"### Timezone: {timezone_by_city}  \n")
-        report.write(f"#### Time in location {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
+        report.write(f"#### Time: {get_info.get_time_by_timezone(timezone_name=timezone_by_city)}  \n")
         report.write(f"**Elevation under sea level:** {elevation} m  \n")
         report.write(
             f"Geomagnetic field: {geomagnetic_field} - {calculations.calculate_kp_level(geomagnetic_field).capitalize()}  \n"
@@ -449,7 +449,7 @@ def report_to_file(
             f"| {round(calculations.celsius_to_kelvin(weather_data['app_temp']), 1)} K  \n"
         )
         report.write(
-            f"**Water temperature in location**: {water_temp} C "
+            f"**Water temperature**: {water_temp} C "
             f"| {round(calculations.celsius_to_fahrenheit(water_temp), 1)} F "
             f"| {round(calculations.celsius_to_kelvin(water_temp), 1)} K  \n"
         )
@@ -520,41 +520,48 @@ def prepare_target_location_info(
     city_name: str,
 ) -> Dict[str, any]:
     """
-    Prepare info such as country name, country code, city name and timezone for target city,
-    then pass it to next func prepare_weather_info
+    Prepare info such as country name, country code, city name and timezone for target city
+    :param city_name:
     :return:
     """
-    geolocator = Nominatim(user_agent="geoapiExercises")
-    location = geolocator.geocode(city_name)
-    longitude = str(location.longitude)
-    latitude = str(location.latitude)
+    try:
+        geolocator = Nominatim(user_agent="geoapiExercises")
+        location = geolocator.geocode(city_name)
+        longitude = str(location.longitude)
+        latitude = str(location.latitude)
 
-    obj = TimezoneFinder()
-    timezone_by_city = obj.timezone_at(
-        lng=location.longitude,
-        lat=location.latitude,
-    )
+        obj = TimezoneFinder()
+        timezone_by_city = obj.timezone_at(
+            lng=location.longitude,
+            lat=location.latitude,
+        )
 
-    loc_ad = geolocator.reverse(latitude + "," + longitude)
-    full_address_by_ll = loc_ad.raw["address"]
+        loc_ad = geolocator.reverse(latitude + "," + longitude)
+        full_address_by_ll = loc_ad.raw["address"]
 
-    country_code = full_address_by_ll.get(
-        "country_code",
-        "",
-    )
-    country_name = full_address_by_ll.get(
-        "country",
-        "",
-    )
+        country_code = full_address_by_ll.get(
+            "country_code",
+            "",
+        )
+        country_name = full_address_by_ll.get(
+            "country",
+            "",
+        )
 
-    return {
-        "location": location,
-        "longitude": longitude,
-        "latitude": latitude,
-        "country_name": country_name,
-        "country_code": country_code,
-        "timezone_by_city": timezone_by_city,
-    }
+        return {
+            "location": location,
+            "longitude": longitude,
+            "latitude": latitude,
+            "country_name": country_name,
+            "country_code": country_code,
+            "timezone_by_city": timezone_by_city,
+        }
+    except AdapterHTTPError as adapter_http_err:
+        logging.error(f"Adapter HTTP Err while preparing info about target location - {adapter_http_err}")
+        return None
+    except BaseException as base_err:
+        logging.error(f"Base Err while preparing info about target location - {base_err}")
+        return None
 
 
 def main():
