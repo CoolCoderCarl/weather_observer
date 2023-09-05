@@ -179,7 +179,7 @@ def prepare_weather_data(
         country_code,
         city_name,
     )
-    
+
     for v in VALUES_TO_DELETE:
         try:
             del result[v]
@@ -571,9 +571,8 @@ def main():
         while True:
             if namespace.infile:
                 for city_name in cities:
-                    if get_info.get_time_by_timezone(
-                        timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
-                    ).split()[1] in [
+                    prepared_t_l_i = prepare_target_location_info(city_name)
+                    if get_info.get_time_by_timezone(timezone_name=prepared_t_l_i["timezone_by_city"]).split()[1] in [
                         "06:00:00",
                         "08:00:00",
                         "10:00:00",
@@ -588,31 +587,30 @@ def main():
                         report_weather_info(
                             report_time=report_time,
                             weather_data=prepare_weather_data(
-                                prepare_target_location_info(city_name)["country_name"],
+                                prepared_t_l_i["country_name"],
                                 city_name,
                             ),
                             city_name=city_name,
-                            timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
-                            country_name=prepare_target_location_info(city_name)["country_name"],
+                            timezone_by_city=prepared_t_l_i["timezone_by_city"],
+                            country_name=prepared_t_l_i["country_name"],
                             elevation=get_info.get_elevation_by_ll(
-                                latitude=prepare_target_location_info(city_name)["latitude"],
-                                longitude=prepare_target_location_info(city_name)["longitude"],
+                                latitude=prepared_t_l_i["latitude"],
+                                longitude=prepared_t_l_i["longitude"],
                             ),
                             water_temp=get_info.get_water_temp_by_ll(
-                                latitude=prepare_target_location_info(city_name)["latitude"],
-                                longitude=prepare_target_location_info(city_name)["longitude"],
+                                latitude=prepared_t_l_i["latitude"],
+                                longitude=prepared_t_l_i["longitude"],
                             ),
                             geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
-                                latitude=prepare_target_location_info(city_name)["location"].latitude,
-                                longitude=prepare_target_location_info(city_name)["location"].longitude,
+                                latitude=prepared_t_l_i["location"].latitude,
+                                longitude=prepared_t_l_i["location"].longitude,
                             ),
                         )
             else:
                 logging.info("Going to load cities by ...")
                 city_name = get_info.get_current_city()
-                if get_info.get_time_by_timezone(
-                    timezone_name=prepare_target_location_info(city_name)["timezone_by_city"]
-                ).split()[1] in [
+                prepared_t_l_i = prepare_target_location_info(city_name)
+                if get_info.get_time_by_timezone(timezone_name=prepared_t_l_i["timezone_by_city"]).split()[1] in [
                     "06:00:00",
                     "08:00:00",
                     "10:00:00",
@@ -627,47 +625,48 @@ def main():
                     report_weather_info(
                         report_time=report_time,
                         weather_data=prepare_weather_data(
-                            prepare_target_location_info(city_name)["country_name"],
+                            prepared_t_l_i["country_name"],
                             city_name,
                         ),
                         city_name=city_name,
-                        timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
-                        country_name=prepare_target_location_info(city_name)["country_name"],
+                        timezone_by_city=prepared_t_l_i["timezone_by_city"],
+                        country_name=prepared_t_l_i["country_name"],
                         elevation=get_info.get_elevation_by_ll(
-                            latitude=prepare_target_location_info(city_name)["latitude"],
-                            longitude=prepare_target_location_info(city_name)["longitude"],
+                            latitude=prepared_t_l_i["latitude"],
+                            longitude=prepared_t_l_i["longitude"],
                         ),
                         water_temp=get_info.get_water_temp_by_ll(
-                            latitude=prepare_target_location_info(city_name)["latitude"],
-                            longitude=prepare_target_location_info(city_name)["longitude"],
+                            latitude=prepared_t_l_i["latitude"],
+                            longitude=prepared_t_l_i["longitude"],
                         ),
                         geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
-                            latitude=prepare_target_location_info(city_name)["location"].latitude,
-                            longitude=prepare_target_location_info(city_name)["location"].longitude,
+                            latitude=prepared_t_l_i["location"].latitude,
+                            longitude=prepared_t_l_i["location"].longitude,
                         ),
                     )
     else:
         city_name = get_info.get_current_city()
+        prepared_t_l_i = prepare_target_location_info(city_name)
         report_weather_info(
             report_time=report_time,
             weather_data=prepare_weather_data(
-                prepare_target_location_info(city_name)["country_name"],
+                prepared_t_l_i["country_name"],
                 city_name,
             ),
             city_name=city_name,
-            timezone_by_city=prepare_target_location_info(city_name)["timezone_by_city"],
-            country_name=prepare_target_location_info(city_name)["country_name"],
+            timezone_by_city=prepared_t_l_i["timezone_by_city"],
+            country_name=prepared_t_l_i["country_name"],
             elevation=get_info.get_elevation_by_ll(
-                latitude=prepare_target_location_info(city_name)["latitude"],
-                longitude=prepare_target_location_info(city_name)["longitude"],
+                latitude=prepared_t_l_i["latitude"],
+                longitude=prepared_t_l_i["longitude"],
             ),
             water_temp=get_info.get_water_temp_by_ll(
-                latitude=prepare_target_location_info(city_name)["location"].latitude,
-                longitude=prepare_target_location_info(city_name)["location"].longitude,
+                latitude=prepared_t_l_i["location"].latitude,
+                longitude=prepared_t_l_i["location"].longitude,
             ),
             geomagnetic_field=get_info.get_geomagnetic_field_by_ll(
-                latitude=prepare_target_location_info(city_name)["location"].latitude,
-                longitude=prepare_target_location_info(city_name)["location"].longitude,
+                latitude=prepared_t_l_i["location"].latitude,
+                longitude=prepared_t_l_i["location"].longitude,
             ),
         )
 
